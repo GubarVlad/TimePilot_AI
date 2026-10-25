@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.py[cod]
+backend/data/settings.json
+backend/data/events.json
+data/settings.json
+data/events.json
+.venv/
+venv/

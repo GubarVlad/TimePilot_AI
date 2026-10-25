@@ -1,0 +1,2 @@
+# Hosted NVIDIA Riva/Parakeet speech-to-text client. The model runs in NVIDIA cloud.
+nvidia-riva-client>=2.27.0
