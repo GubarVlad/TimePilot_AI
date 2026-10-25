@@ -2158,6 +2158,20 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"required": bool(APP_PASSWORD or PUBLIC_DEPLOY), "authenticated": self._authenticated()})
             return
         if not path.startswith("/api/"):
+            rel = path.lstrip("/")
+            target = (WEB_DIR / rel).resolve()
+            if rel and target.is_file() and str(target).startswith(str(WEB_DIR.resolve())):
+                mime = "application/octet-stream"
+                if rel.endswith(".png"): mime = "image/png"
+                elif rel.endswith(".jpg") or rel.endswith(".jpeg"): mime = "image/jpeg"
+                elif rel.endswith(".svg"): mime = "image/svg+xml"
+                elif rel.endswith(".css"): mime = "text/css"
+                elif rel.endswith(".js"): mime = "application/javascript"
+                try:
+                    self._send(200, target.read_bytes(), mime)
+                    return
+                except OSError:
+                    pass
             index_path = WEB_DIR / "index.html"
             try:
                 body = index_path.read_bytes()
