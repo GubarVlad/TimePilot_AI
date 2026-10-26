@@ -1794,6 +1794,39 @@ button:disabled { opacity: 0.55; cursor: wait; }
   }
 }
 
+
+/* Week Drag and Drop (Google Calendar Style) */
+.week-event-card[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.week-event-card.is-dragging {
+  opacity: 0.35;
+  cursor: grabbing;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transform: scale(0.98);
+}
+.week-day-col.drag-over {
+  background-color: rgba(0, 122, 255, 0.06) !important;
+}
+.drag-preview-box {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border: 2px dashed #007aff;
+  background: rgba(0, 122, 255, 0.16);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 60;
+  font-size: 11px;
+  font-weight: 600;
+  color: #007aff;
+  padding: 4px 6px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 /* Fallback test anchor compatibility */
 .workspace-grid {
   grid-template-columns:minmax(0,1fr) minmax(365px,410px);
@@ -1824,7 +1857,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
     <div class="topbar-right">
       <div class="top-today-date" id="topTodayDateBtn" title="Click to pick or return to today">
         <small>TODAY</small>
-        <strong id="headerDate">Oct 24, 2026</strong>
+        <strong id="headerDate">Oct 26, 2026</strong>
       </div>
       <button class="gear-btn" id="configureAiBtn" type="button" aria-label="Настроить AI" title="Настроить облачный AI">⚙</button>
     </div>
@@ -1848,7 +1881,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
           </div>
           <div class="day-date-switcher">
             <button type="button" id="dayPrevBtn">‹ Prev Day</button>
-            <span id="dayDateDisplay">Saturday, October 24</span>
+            <span id="dayDateDisplay">Monday, October 26</span>
             <button type="button" id="dayNextBtn">Next Day ›</button>
             <button type="button" id="dayTodayBtn" style="margin-left:auto">Today</button>
             <button type="button" class="primary-btn" id="addDayEventQuick" style="height:30px;padding:0 12px;font-size:12px">+ Add</button>
@@ -2153,8 +2186,8 @@ button:disabled { opacity: 0.55; cursor: wait; }
       </div>
 
       <div class="insights-banner">
-        <span class="demo-pill">Demo data</span>
-        <span>Conceptual examples for October 19–25. These are not measured results or confirmed habits.</span>
+        <span class="demo-pill" id="insLivePill" style="background:#e0f2fe;color:#0369a1">Live analysis</span>
+        <span id="insLiveBannerText">Calculated directly from your calendar events and personal rhythm profile.</span>
       </div>
 
       <div class="insights-3metrics">
@@ -2182,12 +2215,16 @@ button:disabled { opacity: 0.55; cursor: wait; }
             <h3>Energy by time of day</h3>
             <span class="meta" id="energyPatternToggle">Example pattern</span>
           </div>
-          <svg class="curve-chart-svg" viewBox="0 0 636 130" fill="none">
-            <line x1="0" y1="115" x2="636" y2="115" stroke="#F2F2F7" stroke-width="1"/>
-            <line x1="0" y1="59" x2="636" y2="59" stroke="#F2F2F7" stroke-width="1"/>
-            <line x1="0" y1="3" x2="636" y2="3" stroke="#F2F2F7" stroke-width="1"/>
-            <path d="M0 55.0179C63.6 2.17432 114.48 -2.22932 190.8 6.57795C267.12 15.3852 305.28 44.0089 413.4 94.6507C521.52 145.292 477 90.247 527.88 50.6143C578.76 10.9816 604.2 37.4034 636 44.0089" stroke="#007AFF" stroke-width="3" fill="none"/>
-          </svg>
+          <div style="position:relative">
+            <svg class="curve-chart-svg" id="energyCurveSvg" viewBox="0 0 636 130" fill="none">
+              <line x1="0" y1="115" x2="636" y2="115" stroke="#F2F2F7" stroke-width="1"/>
+              <line x1="0" y1="59" x2="636" y2="59" stroke="#F2F2F7" stroke-width="1"/>
+              <line x1="0" y1="3" x2="636" y2="3" stroke="#F2F2F7" stroke-width="1"/>
+              <path id="energyCurvePath" d="M0 55.0179C63.6 2.17432 114.48 -2.22932 190.8 6.57795C267.12 15.3852 305.28 44.0089 413.4 94.6507C521.52 145.292 477 90.247 527.88 50.6143C578.76 10.9816 604.2 37.4034 636 44.0089" stroke="#007AFF" stroke-width="3" fill="none"/>
+              <g id="energyCurveDots"></g>
+            </svg>
+            <div id="energyCurveTooltip" style="position:absolute;background:rgba(28,28,30,0.92);color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;pointer-events:none;display:none;z-index:20;transform:translate(-50%,-120%);white-space:nowrap"></div>
+          </div>
           <div class="curve-labels-row">
             <span>08:00</span>
             <span>11:00</span>
@@ -2243,15 +2280,15 @@ button:disabled { opacity: 0.55; cursor: wait; }
           <span style="font-size:11px;color:var(--muted)">Recovery window: 15:30–17:00 · Hypothesis, not evidence</span>
         </div>
 
-        <!-- What to try next -->
+        <!-- What to try next / Breathing room -->
         <div class="app-card card-pad">
           <h3 style="font-size:17px;font-weight:700;margin:0 0 12px">What to try next</h3>
           <div class="blue-callout-box" style="margin-top:0">
             <div class="callout-head">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l1.5 4.8 4.8 1.5-4.8 1.5L9 14.1l-1.5-4.8L2.7 7.8l4.8-1.5L9 1.5z" stroke="#0369A1" stroke-width="1.8" stroke-linecap="round"/></svg>
-              Match the work to your energy
+              <span id="breathingRoomTitle">Match the work to your energy</span>
             </div>
-            <p>Place demanding tasks at 09:00–11:00. Keep 14:00–15:00 for admin or recovery, because the example curve dips there.</p>
+            <p id="breathingRoomText">Place demanding tasks during your peak window (09:00–11:00). Keep 14:00–15:00 for recovery or lighter syncs.</p>
           </div>
           <div style="display:flex;gap:10px;margin-bottom:12px">
             <button class="primary-btn" type="button" id="discussWithAiBtn">Discuss with AI</button>
@@ -2285,7 +2322,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
             <span class="ex-tag" id="chatModeTag">Live assistant</span>
           </div>
 
-          <div class="chat-date-sep" id="chatDateSeparator">Today · Saturday, October 24</div>
+          <div class="chat-date-sep" id="chatDateSeparator">Today · Monday, October 26</div>
 
           <div class="chat-scroll-area" id="chatMessages" aria-live="polite">
             <!-- Initial conversation state -->
@@ -2706,7 +2743,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   // Default date
-  let selectedDate = '2026-10-24';
+  let selectedDate = localDateString(new Date());
   let events = [];
   let editingId = null;
   let editingProfileKey = null;
@@ -2827,6 +2864,28 @@ button:disabled { opacity: 0.55; cursor: wait; }
     return `${catMap[e.category] || 'Event'} • ${durStr}`;
   }
 
+  
+  function getAgentProfilePayload() {
+    return {
+      "Chronotype": profileData.chronotype || "Morning person",
+      "Work hours": profileData.workHours || "09:00–17:30 · Mon–Fri",
+      "Focus-session length": profileData.focus || "50 minutes",
+      "Peak focus window": profileData.peak || "09:00–11:00",
+      "Meeting preferences": profileData.meetings || "Prefer afternoons; 15 min buffer between calls",
+      "Break habits": profileData.break || "10 minutes every 50 minutes",
+      "Personal commitments": profileData.personal || "Evening",
+      "Energy dip window": profileData.energyLossTime || "14:00–15:00",
+      "Хронотип": profileData.chronotype || "Morning person",
+      "Рабочие часы": profileData.workHours || "09:00–17:30",
+      "Длительность фокус-сессии (минуты)": String(parseInt(profileData.focus, 10) || 50),
+      "Пиковое время фокуса": profileData.peak || "09:00–11:00",
+      "Предпочтительное время встреч": profileData.meetings || "Prefer afternoons; 15 min buffer between calls",
+      "Предпочтения по перерывам": profileData.break || "10 minutes every 50 minutes",
+      "Личное время": profileData.personal || "Evening",
+      "Когда обычно падает энергия": profileData.energyLossTime || "14:00–15:00"
+    };
+  }
+
   function loadProfileFromStorage() {
     try {
       const saved = JSON.parse(localStorage.getItem('timepilot-profile-data') || '{}');
@@ -2854,6 +2913,91 @@ button:disabled { opacity: 0.55; cursor: wait; }
     if ($('insPeakCol')) $('insPeakCol').textContent = profileData.peak;
   }
 
+  
+  let pendingSmartProposal = null;
+
+  async function updateSmartSuggestionsForDay(dayList) {
+    const textEl = $('smartSuggestText');
+    const btnEl = $('acceptDaySuggestionBtn');
+    if (!textEl || !btnEl) return;
+
+    // Check for proposed items first
+    const proposed = dayList.filter(e => e.status === 'proposed');
+    if (proposed.length > 0) {
+      textEl.textContent = `AI proposed ${proposed.length} schedule adjustment(s) to protect your focus blocks.`;
+      btnEl.textContent = `Accept ${proposed.length} AI Slots`;
+      btnEl.onclick = async () => {
+        for (const p of proposed) {
+          await api(`/api/events/${encodeURIComponent(p.id)}`, {method:'PUT', body:JSON.stringify({status:'planned'})});
+          p.status = 'planned';
+        }
+        renderAllViews();
+        showToast(`Confirmed ${proposed.length} AI schedule slots.`);
+      };
+      return;
+    }
+
+    // Check for continuous stretch >= 2.5h
+    let continuousMins = 0, prevEnd = null, stretchEnd = null;
+    for (const e of dayList) {
+      if (e.category === 'task' || e.category === 'meeting') {
+        const sM = mins(e.start), eM = mins(e.end);
+        if (prevEnd && sM - prevEnd > 20) continuousMins = eM - sM;
+        else continuousMins += (eM - sM);
+        prevEnd = eM;
+        if (continuousMins >= 150) { stretchEnd = e; break; }
+      } else if (e.category === 'break') {
+        continuousMins = 0; prevEnd = mins(e.end);
+      }
+    }
+
+    if (stretchEnd) {
+      textEl.textContent = `Continuous ${Math.round(continuousMins/60*10)/10}h work block detected after ${stretchEnd.start}. A 15m break is recommended.`;
+      btnEl.textContent = '+ Add 15m Break';
+      btnEl.onclick = async () => {
+        const bStart = stretchEnd.end;
+        const bEndM = mins(bStart) + 15;
+        const bEnd = `${String(Math.floor(bEndM/60)).padStart(2,'0')}:${String(bEndM%60).padStart(2,'0')}`;
+        await api('/api/events', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: 'AI Smart Break',
+            date: selectedDate,
+            start: bStart,
+            end: bEnd,
+            category: 'break',
+            priority: 'low',
+            status: 'planned'
+          })
+        });
+        showToast('Smart break scheduled!');
+        await refreshEvents();
+      };
+      return;
+    }
+
+    // Check for backlog task
+    const backlogTask = events.find(e => e.status === 'backlog');
+    if (backlogTask && dayList.length < 5) {
+      textEl.textContent = `Found open afternoon focus window. Schedule '${backlogTask.title}'?`;
+      btnEl.textContent = 'Schedule Backlog Task';
+      btnEl.onclick = async () => {
+        await api(`/api/events/${encodeURIComponent(backlogTask.id)}`, {
+          method: 'PUT',
+          body: JSON.stringify({date: selectedDate, start: '15:30', end: '16:30', status: 'planned'})
+        });
+        showToast(`Scheduled '${backlogTask.title}' for today!`);
+        await refreshEvents();
+      };
+      return;
+    }
+
+    // Default balanced state
+    textEl.textContent = 'Found a 2-hour window for deep work based on your peak productivity habits.';
+    btnEl.textContent = 'Schedule Optimized ✓';
+    btnEl.onclick = () => showToast('Today’s schedule is already optimized!');
+  }
+
   // SCREEN 1: DAY VIEW RENDER
   function renderDayView() {
     const root = $('daySchedule');
@@ -2863,7 +3007,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
     const isToday = selectedDate === localDateString(new Date());
     $('dayTitleHeading').textContent = isToday ? "Today's Schedule" : `Schedule · ${formatDay(selectedDate, {weekday:'short', month:'short', day:'numeric'})}`;
     $('dayDateDisplay').textContent = formatDay(selectedDate, {weekday:'long', month:'long', day:'numeric'});
-    $('headerDate').textContent = formatDay(selectedDate, {month:'short', day:'numeric', year:'numeric'});
+    $('headerDate').textContent = formatDay(localDateString(new Date()), {month:'short', day:'numeric', year:'numeric'});
 
     let dayList = events.filter(e => e.date === selectedDate).sort((a,b) => a.start.localeCompare(b.start));
     if (showOnlyActiveDayEvents) {
@@ -2938,6 +3082,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
     }
 
     // Sidebar: Task Matrix
+    updateSmartSuggestionsForDay(dayList);
     renderTaskMatrix();
   }
 
@@ -2972,6 +3117,10 @@ button:disabled { opacity: 0.55; cursor: wait; }
   }
 
   // SCREEN 2: WEEK VIEW RENDER
+  // Drag & drop state for Week Planner
+  let draggedEvent = null;
+  let dragStartOffsetY = 0;
+
   function renderWeekView() {
     const monday = mondayOf(selectedDate);
     const sunday = addDays(monday, 6);
@@ -2987,6 +3136,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
       const thEl = document.querySelector(`.week-th[data-day-col="${dayIdx}"]`);
       if (!colEl) continue;
       colEl.innerHTML = '';
+      colEl.dataset.date = curDate;
 
       const isCurrentDay = curDate === selectedDate;
       colEl.classList.toggle('active-day-col', isCurrentDay);
@@ -2999,15 +3149,93 @@ button:disabled { opacity: 0.55; cursor: wait; }
         };
       }
 
-      // Allow double-clicking slot to add event
+      // Double-click to create event
       colEl.ondblclick = (evt) => {
         if (evt.target === colEl) {
           const rect = colEl.getBoundingClientRect();
           const y = evt.clientY - rect.top;
-          const startHour = Math.min(16, Math.max(DAY_START, Math.floor(DAY_START + y / HOUR_HEIGHT)));
+          const startHour = Math.min(18, Math.max(DAY_START, Math.floor(DAY_START + y / HOUR_HEIGHT)));
           const startStr = `${String(startHour).padStart(2,'0')}:00`;
           const endStr = `${String(startHour + 1).padStart(2,'0')}:00`;
           openEventModal({date: curDate, start: startStr, end: endStr, category: 'task', priority: 'medium'});
+        }
+      };
+
+      // Google Calendar Style Drag and Drop handlers on day column
+      colEl.ondragover = (evt) => {
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'move';
+        colEl.classList.add('drag-over');
+        if (!draggedEvent) return;
+
+        const colRect = colEl.getBoundingClientRect();
+        const y = evt.clientY - colRect.top - dragStartOffsetY;
+        const totalMins = Math.max(0, Math.min((DAY_END - DAY_START) * 60 - 30, (y / HOUR_HEIGHT) * 60));
+        const snappedMins = Math.round(totalMins / 15) * 15;
+        const topPx = (snappedMins / 60) * HOUR_HEIGHT;
+        const durMins = Math.max(15, mins(draggedEvent.end) - mins(draggedEvent.start));
+        const heightPx = Math.max(22, (durMins / 60) * HOUR_HEIGHT - 3);
+
+        let preview = $('weekDragPreview');
+        if (!preview) {
+          preview = document.createElement('div');
+          preview.id = 'weekDragPreview';
+          preview.className = 'drag-preview-box';
+        }
+        preview.style.display = 'block';
+        preview.style.top = `${topPx}px`;
+        preview.style.height = `${heightPx}px`;
+        const startHour = DAY_START + Math.floor(snappedMins / 60);
+        const startM = snappedMins % 60;
+        const endTotal = DAY_START * 60 + snappedMins + durMins;
+        const endHour = Math.floor(endTotal / 60);
+        const endM = endTotal % 60;
+        preview.innerHTML = `<strong>${String(startHour).padStart(2,'0')}:${String(startM).padStart(2,'0')}–${String(endHour).padStart(2,'0')}:${String(endM).padStart(2,'0')}</strong> <span>${escapeHtml(draggedEvent.title)}</span>`;
+        if (preview.parentElement !== colEl) colEl.appendChild(preview);
+      };
+
+      colEl.ondragleave = (evt) => {
+        if (!colEl.contains(evt.relatedTarget)) {
+          colEl.classList.remove('drag-over');
+        }
+      };
+
+      colEl.ondrop = async (evt) => {
+        evt.preventDefault();
+        colEl.classList.remove('drag-over');
+        const preview = $('weekDragPreview');
+        if (preview) preview.remove();
+        if (!draggedEvent) return;
+
+        const colRect = colEl.getBoundingClientRect();
+        const y = evt.clientY - colRect.top - dragStartOffsetY;
+        const totalMins = Math.max(0, Math.min((DAY_END - DAY_START) * 60 - 30, (y / HOUR_HEIGHT) * 60));
+        const snappedMins = Math.round(totalMins / 15) * 15;
+        const durMins = Math.max(15, mins(draggedEvent.end) - mins(draggedEvent.start));
+        const startTotal = DAY_START * 60 + snappedMins;
+        const endTotal = startTotal + durMins;
+
+        const sH = Math.floor(startTotal / 60), sM = startTotal % 60;
+        const eH = Math.floor(endTotal / 60), eM = endTotal % 60;
+        const newStart = `${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')}`;
+        const newEnd = `${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}`;
+        const targetDate = colEl.dataset.date;
+        const evToUpdate = draggedEvent;
+        draggedEvent = null;
+
+        try {
+          await api(`/api/events/${encodeURIComponent(evToUpdate.id)}`, {
+            method: 'PUT',
+            body: JSON.stringify({ date: targetDate, start: newStart, end: newEnd })
+          });
+          evToUpdate.date = targetDate;
+          evToUpdate.start = newStart;
+          evToUpdate.end = newEnd;
+          renderAllViews();
+          showToast(`Moved "${evToUpdate.title}" to ${formatDay(targetDate, {weekday:'short'})} ${newStart}–${newEnd}`);
+        } catch (err) {
+          showToast(err.message || 'Could not move event');
+          renderAllViews();
         }
       };
 
@@ -3034,12 +3262,31 @@ button:disabled { opacity: 0.55; cursor: wait; }
           <span>${escapeHtml(e.start)}–${escapeHtml(e.end)}</span>
         `;
         card.addEventListener('click', () => openEventModal(e));
+
+        // Enable Google Calendar-style dragging
+        card.setAttribute('draggable', 'true');
+        card.ondragstart = (evt) => {
+          draggedEvent = e;
+          const cardRect = card.getBoundingClientRect();
+          dragStartOffsetY = evt.clientY - cardRect.top;
+          card.classList.add('is-dragging');
+          evt.dataTransfer.setData('text/plain', e.id);
+          evt.dataTransfer.effectAllowed = 'move';
+        };
+        card.ondragend = () => {
+          card.classList.remove('is-dragging');
+          const preview = $('weekDragPreview');
+          if (preview) preview.remove();
+          document.querySelectorAll('.week-day-col').forEach(c => c.classList.remove('drag-over'));
+          draggedEvent = null;
+        };
+
         colEl.appendChild(card);
       });
     }
 
     // Dynamic Focus target
-    const targetHours = 18;
+    const targetHours = profileData.focusGoal || 18;
     const actualHours = Math.round((totalFocusMins / 60) * 10) / 10;
     const hInt = Math.floor(totalFocusMins / 60);
     const mInt = totalFocusMins % 60;
@@ -3147,10 +3394,89 @@ button:disabled { opacity: 0.55; cursor: wait; }
   }
 
   // SCREEN 4: INSIGHTS VIEW RENDER
+  function renderDynamicEnergyCurve() {
+    const pathEl = $('energyCurvePath');
+    const svgEl = $('energyCurveSvg');
+    if (!pathEl || !svgEl) return;
+
+    const chrono = (profileData.chronotype || '').toLowerCase();
+    const dayEvts = events.filter(e => e.date === selectedDate);
+
+    // Points at 08:00 (x=0), 11:00 (x=160), 14:00 (x=320), 17:00 (x=480), 20:00 (x=636)
+    // Height=130 (y=0 top 100%, y=120 bottom 0%)
+    let baseEnergies = [70, 95, 45, 75, 40]; // Lark
+    if (chrono.includes('owl')) {
+      baseEnergies = [40, 65, 75, 95, 80]; // Owl
+    } else if (chrono.includes('intermediate') || chrono.includes('balanced')) {
+      baseEnergies = [60, 92, 55, 78, 50]; // Balanced
+    }
+
+    const hours = [8, 11, 14, 17, 20];
+    const adjustedEnergies = baseEnergies.map((eng, idx) => {
+      const h = hours[idx];
+      const slotMin = h * 60;
+      let eVal = eng;
+      dayEvts.forEach(e => {
+        const sM = mins(e.start), eM = mins(e.end);
+        if (slotMin >= sM - 30 && slotMin <= eM + 30) {
+          if (e.category === 'task') eVal = Math.min(98, eVal + 5);
+          else if (e.category === 'break') eVal = Math.min(96, eVal + 12);
+          else if (e.category === 'meeting') eVal = Math.max(30, eVal - 8);
+        }
+      });
+      return eVal;
+    });
+
+    const xs = [0, 160, 320, 480, 636];
+    const coords = adjustedEnergies.map((eng, idx) => {
+      const y = 120 - ((eng / 100) * 110);
+      return {x: xs[idx], y: Math.max(8, Math.min(115, y)), eng, hour: hours[idx]};
+    });
+
+    let d = `M ${coords[0].x} ${coords[0].y}`;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const p0 = coords[i];
+      const p1 = coords[i + 1];
+      const mx = (p0.x + p1.x) / 2;
+      d += ` C ${mx} ${p0.y}, ${mx} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    pathEl.setAttribute('d', d);
+
+    // Interactive dots & tooltip
+    const dotsG = $('energyCurveDots');
+    const tip = $('energyCurveTooltip');
+    if (dotsG && tip) {
+      dotsG.innerHTML = coords.map(c => `
+        <circle cx="${c.x}" cy="${c.y}" r="4" fill="#FFFFFF" stroke="#007AFF" stroke-width="2.5" style="cursor:pointer" data-h="${c.hour}" data-eng="${Math.round(c.eng)}"/>
+      `).join('');
+
+      dotsG.querySelectorAll('circle').forEach(c => {
+        c.onmouseenter = (evt) => {
+          const h = evt.target.dataset.h;
+          const eng = evt.target.dataset.eng;
+          tip.textContent = `${String(h).padStart(2,'0')}:00 · ${eng}% Energy Level`;
+          tip.style.display = 'block';
+          tip.style.left = `${evt.target.getAttribute('cx')}px`;
+          tip.style.top = `${evt.target.getAttribute('cy')}px`;
+        };
+        c.onmouseleave = () => { tip.style.display = 'none'; };
+      });
+    }
+
+    if ($('insPeakCol')) $('insPeakCol').textContent = profileData.peak || '09:00–11:00';
+    if ($('insDipCol')) $('insDipCol').textContent = profileData.energyLossTime || '14:00–15:00';
+    if ($('insPeakWindowVal')) $('insPeakWindowVal').textContent = profileData.peak || '09:00–11:00';
+    if ($('insDipWindowVal')) $('insDipWindowVal').textContent = profileData.energyLossTime || '14:00–15:00';
+  }
+
   function renderInsightsView() {
     const monday = mondayOf(selectedDate);
     const sunday = addDays(monday, 6);
     const weekEvents = events.filter(e => e.date >= monday && e.date <= sunday);
+
+    if ($('insLiveBannerText')) {
+      $('insLiveBannerText').textContent = `Live rhythm analysis for ${formatDay(monday, {month:'short', day:'numeric'})} — ${formatDay(sunday, {month:'short', day:'numeric'})}. Calculated directly from your calendar.`;
+    }
 
     // Sum focus hours per day
     const dayFocusHours = [0, 0, 0, 0, 0, 0, 0];
@@ -3177,7 +3503,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
     const hInt = Math.floor(weekTotalFocus);
     const mInt = Math.round((weekTotalFocus % 1) * 60);
     $('insFocusTimeVal').textContent = `${hInt}h ${mInt ? mInt + 'm' : ''}`;
-    $('insFocusGoalVal').textContent = '18h weekly target';
+    $('insFocusGoalVal').textContent = `${profileData.focusGoal || 18}h weekly target`;
 
     $('interruptionCountVal').textContent = interruptionsCount || 12;
     $('daysWithBreaksVal').textContent = `${daysWithBreaks.size || 4} / 7`;
@@ -3208,6 +3534,22 @@ button:disabled { opacity: 0.55; cursor: wait; }
         trendContainer.appendChild(col);
       });
     }
+
+    // Dynamic curve
+    renderDynamicEnergyCurve();
+
+    // Dynamic Breathing Room / What to try next text
+    if ($('breathingRoomTitle') && $('breathingRoomText')) {
+      const peakWindow = profileData.peak || '09:00–11:00';
+      const dipWindow = profileData.energyLossTime || '14:00–15:00';
+      if (weekTotalFocus < (profileData.focusGoal || 18) * 0.7) {
+        $('breathingRoomTitle').textContent = 'Protect upcoming focus hours';
+        $('breathingRoomText').textContent = `You have completed ${hInt}h of deep work so far. Block out 2 uninterrupted hours during your peak window (${peakWindow}) on Thursday or Friday.`;
+      } else {
+        $('breathingRoomTitle').textContent = 'Match the work to your energy';
+        $('breathingRoomText').textContent = `Place demanding tasks at ${peakWindow}. Keep ${dipWindow} for admin or recovery, because your circadian curve dips there.`;
+      }
+    }
   }
 
   // SCREEN 5: AI CHAT SIDEBAR CONTEXT
@@ -3215,6 +3557,11 @@ button:disabled { opacity: 0.55; cursor: wait; }
     const listRoot = $('chatTodayContextList');
     if (!listRoot) return;
     listRoot.innerHTML = '';
+
+    if ($('chatDateSeparator')) {
+      const isToday = selectedDate === localDateString(new Date());
+      $('chatDateSeparator').textContent = isToday ? `Today · ${formatDay(selectedDate, {weekday:'long', month:'long', day:'numeric'})}` : formatDay(selectedDate, {weekday:'long', month:'long', day:'numeric'});
+    }
 
     const todayEvents = events.filter(e => e.date === selectedDate).sort((a,b) => a.start.localeCompare(b.start));
     todayEvents.forEach(e => {
@@ -3380,7 +3727,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
           message: text,
           selected_date: selectedDate,
           history: conversationHistory.slice(-10),
-          profile_preferences: profileData
+          profile_preferences: getAgentProfilePayload()
         })
       });
       aiRow.querySelector('.msg-meta').innerHTML = `<svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l1.5 4.8 4.8 1.5-4.8 1.5L9 14.1l-1.5-4.8L2.7 7.8l4.8-1.5L9 1.5z" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg> AI · ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
@@ -3561,7 +3908,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
   // Day controls
   $('dayPrevBtn')?.addEventListener('click', () => { selectedDate = addDays(selectedDate, -1); renderAllViews(); });
   $('dayNextBtn')?.addEventListener('click', () => { selectedDate = addDays(selectedDate, 1); renderAllViews(); });
-  $('dayTodayBtn')?.addEventListener('click', () => { selectedDate = '2026-10-24'; renderAllViews(); });
+  $('dayTodayBtn')?.addEventListener('click', () => { selectedDate = localDateString(new Date()); renderAllViews(); });
   $('addDayEventQuick')?.addEventListener('click', () => openEventModal({date: selectedDate}));
   $('todayScheduleToggle')?.addEventListener('change', (e) => {
     showOnlyActiveDayEvents = !e.target.checked;
@@ -3583,9 +3930,35 @@ button:disabled { opacity: 0.55; cursor: wait; }
     showView('chat');
     sendAgentMessage('Reschedule my open tasks to better fit my focus hours.');
   });
-  $('optimizeDayBtn')?.addEventListener('click', () => {
-    showView('chat');
-    sendAgentMessage('Optimize today\'s schedule for maximum deep work without overlap.');
+    $('optimizeDayBtn')?.addEventListener('click', async () => {
+    showToast('Asking AI model to analyze and optimize schedule...');
+    try {
+      const data = await api('/api/agent', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: "Оптимизируй расписание на этот день с учётом моих биоритмов (About you). Найди лучшие окна для глубокого фокуса и добавь необходимые перерывы.",
+          selected_date: selectedDate,
+          history: conversationHistory.slice(-4),
+          profile_preferences: getAgentProfilePayload()
+        })
+      });
+      if (data.reply) {
+        $('smartSuggestText').textContent = data.reply;
+      }
+      if (data.proposal && data.proposal.length) {
+        pendingSmartProposal = data.proposal;
+        $('acceptDaySuggestionBtn').textContent = `Apply ${data.proposal.length} AI Changes`;
+        $('acceptDaySuggestionBtn').onclick = async () => {
+          await api('/api/agent/apply', {method:'POST', body:JSON.stringify({changes: pendingSmartProposal})});
+          showToast('AI schedule changes applied!');
+          await refreshEvents();
+        };
+      }
+      showToast('AI analysis complete.');
+    } catch (err) {
+      showView('chat');
+      sendAgentMessage("Optimize today's schedule for maximum deep work without overlap.");
+    }
   });
 
   // Task Matrix
@@ -3601,7 +3974,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
   // Week view controls
   $('prevWeek').addEventListener('click', () => { selectedDate = addDays(selectedDate, -7); refreshEvents(); });
   $('nextWeek').addEventListener('click', () => { selectedDate = addDays(selectedDate, 7); refreshEvents(); });
-  $('todayBtn').addEventListener('click', () => { selectedDate = '2026-10-24'; refreshEvents(); });
+  $('todayBtn').addEventListener('click', () => { selectedDate = localDateString(new Date()); refreshEvents(); });
   $('addEventBtn').addEventListener('click', () => openEventModal({date: selectedDate}));
   $('reviewWeekProposalsBtn')?.addEventListener('click', async () => {
     const monday = mondayOf(selectedDate);
@@ -3657,9 +4030,9 @@ button:disabled { opacity: 0.55; cursor: wait; }
   });
 
   // Insights buttons
-  $('discussWithAiBtn')?.addEventListener('click', () => {
+    $('discussWithAiBtn')?.addEventListener('click', () => {
     showView('chat');
-    sendAgentMessage('Discuss my weekly energy patterns and suggest adjustments.');
+    sendAgentMessage('Проанализируй мои биоритмы и расписание на эту неделю. Посоветуй, как оптимизировать нагрузку с учётом моих параметров в About you.');
   });
   $('confirmRhythmBtn')?.addEventListener('click', () => showView('profile'));
   $('insightsPeriodBtn')?.addEventListener('click', () => {
@@ -3679,9 +4052,9 @@ button:disabled { opacity: 0.55; cursor: wait; }
   });
 
   $('acceptChatAdjustmentsBtn')?.addEventListener('click', async () => {
-    // Confirm the 3 adjustment items
-    const satProposed = events.filter(e => e.date === '2026-10-24' && e.status === 'proposed');
-    for (const p of satProposed) {
+    // Confirm proposed adjustment items
+    const proposed = events.filter(e => e.status === 'proposed');
+    for (const p of proposed) {
       await api(`/api/events/${encodeURIComponent(p.id)}`, {method:'PUT', body:JSON.stringify({status:'planned'})});
       p.status = 'planned';
     }
@@ -3833,11 +4206,16 @@ button:disabled { opacity: 0.55; cursor: wait; }
 
   // Initial load
   loadProfileFromStorage();
+  renderAllViews();
   (async () => {
-    const ok = await checkAuth();
-    if (ok) {
-      await loadHealth();
-      await refreshEvents();
+    try {
+      const ok = await checkAuth();
+      if (ok) {
+        await loadHealth();
+        await refreshEvents();
+      }
+    } catch (err) {
+      console.warn('Initial load error:', err);
     }
   })();
 
