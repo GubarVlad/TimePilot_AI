@@ -1577,8 +1577,15 @@ button:disabled { opacity: 0.55; cursor: wait; }
   grid-template-columns: 180px minmax(0, 1fr) 50px;
   align-items: center;
   gap: 16px;
-  padding: 18px 0;
+  padding: 16px 14px;
   border-top: 1px solid #f2f2f7;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.15s ease;
+}
+
+.about-row:hover {
+  background: rgba(0, 122, 255, 0.05);
 }
 
 .about-row:first-child {
@@ -1612,6 +1619,63 @@ button:disabled { opacity: 0.55; cursor: wait; }
   border: 0;
   text-align: right;
   cursor: pointer;
+}
+
+/* Interactive Profile Presets */
+.profile-presets-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 270px;
+  overflow-y: auto;
+  padding: 2px 1px;
+}
+.profile-preset-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1.5px solid #e5e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.profile-preset-card:hover {
+  border-color: var(--blue);
+  background: rgba(0, 122, 255, 0.03);
+}
+.profile-preset-card.active {
+  border-color: var(--blue);
+  background: rgba(0, 122, 255, 0.08);
+  box-shadow: 0 0 0 1px var(--blue);
+}
+.profile-preset-card .preset-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+.profile-preset-card .preset-info {
+  flex: 1;
+}
+.profile-preset-card .preset-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.profile-preset-card .preset-desc {
+  font-size: 12px;
+  color: var(--muted-dark);
+}
+.profile-preset-card .preset-check {
+  font-size: 16px;
+  color: var(--blue);
+  font-weight: 700;
+  display: none;
+}
+.profile-preset-card.active .preset-check {
+  display: block;
 }
 
 .consent-toggle-row {
@@ -2325,58 +2389,22 @@ button:disabled { opacity: 0.55; cursor: wait; }
           <div class="chat-date-sep" id="chatDateSeparator">Today · Monday, October 26</div>
 
           <div class="chat-scroll-area" id="chatMessages" aria-live="polite">
-            <!-- Initial conversation state -->
-            <div class="chat-msg-row user-msg">
-              <div class="msg-meta">Vlad · 10:42</div>
-              <div class="msg-bubble">
-                Afternoons feel less productive. Can we make my schedule a little easier after lunch?
-              </div>
-            </div>
-
             <div class="chat-msg-row ai-msg">
               <div class="msg-meta">
                 <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l1.5 4.8 4.8 1.5-4.8 1.5L9 14.1l-1.5-4.8L2.7 7.8l4.8-1.5L9 1.5z" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg>
-                AI · 10:42
+                AI · TimePilot
               </div>
               <div class="msg-body">
-                <p style="margin:0 0 10px">Absolutely. If 14:00–15:00 is a low-energy window, I'd keep it for lighter work or a break. Your afternoon dip is still a hypothesis, not a measured fact.</p>
-                <p style="margin:0">For today, I suggest moving Reports to 15:30–16:15, when energy may recover. Your 09:00–11:00 Deep Work stays as it is; I'll suggest demanding new tasks in that morning window.</p>
-
-                <!-- Proposal Box Card -->
-                <div class="proposal-box-card" id="activeProposalCard">
-                  <div class="p-head">
-                    <strong>Suggested adjustment · Today</strong>
-                    <span class="not-saved-tag">Not saved</span>
-                  </div>
-                  <div class="proposal-adj-list" id="proposalAdjList">
-                    <div class="proposal-adj-item">
-                      <span>14:00–14:15 · Smart Break</span>
-                      <span class="sub-tag">Accept existing proposal</span>
-                    </div>
-                    <div class="proposal-adj-item">
-                      <span>14:15–14:35 · Reply to client emails</span>
-                      <span class="sub-tag">New light-work slot</span>
-                    </div>
-                    <div class="proposal-adj-item">
-                      <span>15:30–16:15 · Review Q3 Reports</span>
-                      <span class="sub-tag">Move from 14:15</span>
-                    </div>
-                  </div>
-                  <p>Personal Time at 16:15 and confirmed meetings stay unchanged. Design Sync remains proposed. Nothing has moved yet.</p>
-                  <div class="proposal-btns-row">
-                    <button class="primary-btn" type="button" id="acceptChatAdjustmentsBtn">Accept 3 changes</button>
-                    <button class="secondary-btn" type="button" id="reviewChatAdjustmentsBtn">Review changes</button>
-                  </div>
-                </div>
+                <p>Hello, Uladzislau! I am your TimePilot scheduling assistant. I help you protect deep focus blocks, align demanding tasks with your peak energy, and adapt your calendar. How can I help you today?</p>
               </div>
             </div>
           </div>
 
           <!-- Quick chips -->
           <div class="chat-quick-chips">
-            <button class="quick-chip-btn" type="button" data-prompt="Why this time?">Why this time?</button>
-            <button class="quick-chip-btn" type="button" data-prompt="Keep Reports where it is">Keep Reports where it is</button>
-            <button class="quick-chip-btn" type="button" data-prompt="Update my energy profile">Update my energy profile</button>
+            <button class="quick-chip-btn" type="button" data-prompt="Optimize my schedule for today">Optimize my schedule for today</button>
+            <button class="quick-chip-btn" type="button" data-prompt="Find a 2-hour deep focus slot">Find a 2-hour deep focus slot</button>
+            <button class="quick-chip-btn" type="button" data-prompt="What do you know about my rhythm?">What do you know about my rhythm?</button>
           </div>
 
           <!-- Chat Form -->
@@ -2450,65 +2478,65 @@ button:disabled { opacity: 0.55; cursor: wait; }
             </p>
 
             <div class="about-table">
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="chronotype">
                 <span class="prop-name">Chronotype</span>
                 <div class="prop-val">
                   <strong id="valChronotype">Morning person</strong>
-                  <span>Self-reported · you prefer an early start</span>
+                  <span id="subChronotype">Self-reported · you prefer an early start</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="chronotype">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="workHours">
                 <span class="prop-name">Work hours</span>
                 <div class="prop-val">
                   <strong id="valWorkHours">09:00–17:30 · Mon–Fri</strong>
-                  <span>Saturday events are kept as calendar exceptions</span>
+                  <span id="subWorkHours">Configured working hours · Calendar protects your off-hours</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="workHours">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="focus">
                 <span class="prop-name">Focus-session length</span>
                 <div class="prop-val">
                   <strong id="valFocusSession">50 minutes</strong>
-                  <span>Follow with a 10-minute break</span>
+                  <span id="subFocusSession">Follow with a 10-minute break to prevent fatigue</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="focus">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="peak">
                 <span class="prop-name">Peak focus</span>
                 <div class="prop-val">
                   <strong id="valPeakFocus">09:00–11:00</strong>
-                  <span>You prefer demanding tasks in the morning</span>
+                  <span id="subPeakFocus">Demanding focus work scheduled in this window</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="peak">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="meetings">
                 <span class="prop-name">Meeting preferences</span>
                 <div class="prop-val">
                   <strong id="valMeetings">11:00–14:00</strong>
-                  <span>Batch meetings; avoid the first two hours</span>
+                  <span id="subMeetings">Batch meetings; avoid the first two hours</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="meetings">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="break">
                 <span class="prop-name">Break habits</span>
                 <div class="prop-val">
                   <strong id="valBreaks">10 minutes every 50 minutes</strong>
-                  <span>Prefer a walk or time away from the screen</span>
+                  <span id="subBreaks">Prefer a walk or time away from the screen</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="break">Edit</button>
               </div>
 
-              <div class="about-row">
+              <div class="about-row" data-edit-profile="personal">
                 <span class="prop-name">Personal commitments</span>
                 <div class="prop-val">
                   <strong id="valPersonal">Saturday · 16:15–17:15</strong>
-                  <span>Protect Personal Time; never move automatically</span>
+                  <span id="subPersonal">Protect Personal Time; never move automatically</span>
                 </div>
                 <button class="edit-link" type="button" data-edit-profile="personal">Edit</button>
               </div>
@@ -2531,12 +2559,12 @@ button:disabled { opacity: 0.55; cursor: wait; }
           <div class="side-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
               <strong style="font-size:17px;color:var(--ink)">Your energy profile</strong>
-              <span style="font-size:12px;color:var(--blue)">Example</span>
+              <span id="aboutEnergyTag" style="font-size:12px;color:var(--blue);font-weight:600">Active Profile</span>
             </div>
-            <svg class="curve-chart-svg" viewBox="0 0 636 130" fill="none" style="height:70px">
+            <svg class="curve-chart-svg" id="aboutEnergyCurveSvg" viewBox="0 0 636 130" fill="none" style="height:70px">
               <line x1="0" y1="115" x2="636" y2="115" stroke="#F2F2F7" stroke-width="1"/>
               <line x1="0" y1="59" x2="636" y2="59" stroke="#F2F2F7" stroke-width="1"/>
-              <path d="M0 55.0179C63.6 2.17432 114.48 -2.22932 190.8 6.57795C267.12 15.3852 305.28 44.0089 413.4 94.6507C521.52 145.292 477 90.247 527.88 50.6143C578.76 10.9816 604.2 37.4034 636 44.0089" stroke="#007AFF" stroke-width="3" fill="none"/>
+              <path id="aboutEnergyCurvePath" d="M0 55.0179C63.6 2.17432 114.48 -2.22932 190.8 6.57795C267.12 15.3852 305.28 44.0089 413.4 94.6507C521.52 145.292 477 90.247 527.88 50.6143C578.76 10.9816 604.2 37.4034 636 44.0089" stroke="#007AFF" stroke-width="3" fill="none"/>
             </svg>
             <div class="curve-labels-row" style="margin-bottom:12px">
               <span>08:00</span>
@@ -2544,13 +2572,13 @@ button:disabled { opacity: 0.55; cursor: wait; }
               <span>14:00</span>
               <span>17:00</span>
             </div>
-            <div style="display:flex;gap:8px;margin-bottom:14px">
-              <span class="priority-chip high-pri">09:00–11:00 · You told me</span>
-              <span class="status-badge proposed">Afternoon · Hypothesis</span>
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <span class="priority-chip high-pri" id="aboutPeakChip">09:00–11:00 · You told me</span>
+              <span class="status-badge proposed" id="aboutDipChip">Afternoon · Hypothesis</span>
             </div>
             <div style="background:var(--gray-pill);border-radius:12px;padding:14px">
               <strong style="display:block;font-size:14px;color:var(--ink);margin-bottom:4px">AI hypothesis — confirm or correct</strong>
-              <p style="font-size:12px;color:var(--muted-dark);line-height:1.45;margin:0 0 12px">
+              <p style="font-size:12px;color:var(--muted-dark);line-height:1.45;margin:0 0 12px" id="aboutHypothesisDesc">
                 You may dip at 14:00–15:00 and recover at 15:30–17:00. This is an example, not a measured habit.
               </p>
               <div style="display:flex;gap:8px">
@@ -2675,21 +2703,25 @@ button:disabled { opacity: 0.55; cursor: wait; }
 
 <!-- Profile Preference Edit Modal -->
 <div class="modal-backdrop" id="profileEditModal" role="dialog" aria-modal="true">
-  <form class="modal" id="profileEditForm">
+  <form class="modal" id="profileEditForm" style="max-width:520px">
     <div class="modal-head">
       <h3 id="profileEditTitle">Edit Preference</h3>
       <button class="modal-close-btn" type="button" id="closeProfileEdit">×</button>
     </div>
-    <div class="modal-body" style="grid-template-columns:1fr">
-      <div class="field full">
-        <label id="profileEditLabel" for="profileEditInput">Value</label>
+    <div class="modal-body" style="grid-template-columns:1fr;gap:12px">
+      <div style="font-size:13px;color:var(--muted-dark)">Choose an option below or type a custom preference:</div>
+      <div id="profilePresetContainer" class="profile-presets-grid">
+        <!-- Injected dynamically with rich cards -->
+      </div>
+      <div class="field full" style="margin-top:4px">
+        <label id="profileEditLabel" for="profileEditInput">Custom or Selected Value</label>
         <input id="profileEditInput" type="text" maxlength="120" required>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="profileEditHelp">This informs AI schedule suggestions.</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="profileEditHelp">This informs AI schedule proposals and protects your focus blocks.</div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="secondary-btn" type="button" id="cancelProfileEdit">Cancel</button>
-      <button class="primary-btn" type="submit">Save</button>
+      <button class="primary-btn" type="submit">Save Preference</button>
     </div>
   </form>
 </div>
@@ -2911,6 +2943,77 @@ button:disabled { opacity: 0.55; cursor: wait; }
     if ($('valPersonal')) $('valPersonal').textContent = profileData.personal;
     if ($('insPeakWindowVal')) $('insPeakWindowVal').textContent = profileData.peak;
     if ($('insPeakCol')) $('insPeakCol').textContent = profileData.peak;
+
+    // Dynamic subtitles in "You told me"
+    const chrono = (profileData.chronotype || '').toLowerCase();
+    if ($('subChronotype')) {
+      if (chrono.includes('owl') || chrono.includes('night') || chrono.includes('сова')) {
+        $('subChronotype').textContent = 'Self-reported · you prefer late afternoon & evening focus (19:00–23:00)';
+      } else if (chrono.includes('lark') || chrono.includes('morning') || chrono.includes('жаворонок')) {
+        $('subChronotype').textContent = 'Self-reported · you prefer an early start and morning focus (07:00–11:00)';
+      } else {
+        $('subChronotype').textContent = 'Self-reported · steady daylight focus throughout the workday';
+      }
+    }
+    if ($('subWorkHours')) $('subWorkHours').textContent = `Configured working hours (${profileData.workHours}) · Calendar protects off-hours`;
+    if ($('subFocusSession')) $('subFocusSession').textContent = `Focus sprint of ${profileData.focus} followed by a short reset break`;
+    if ($('subPeakFocus')) $('subPeakFocus').textContent = `Demanding focus work scheduled during peak window (${profileData.peak})`;
+    if ($('subMeetings')) $('subMeetings').textContent = `Preferred meeting window (${profileData.meetings})`;
+    if ($('subBreaks')) $('subBreaks').textContent = `Break cadence: ${profileData.break}`;
+    if ($('subPersonal')) $('subPersonal').textContent = `Protected personal commitment (${profileData.personal}); never moved by AI`;
+
+    // Dynamic "Your energy profile" sidebar card
+    const dip = profileData.energyLossTime || '14:00–15:00';
+    if ($('aboutPeakChip')) $('aboutPeakChip').textContent = `${profileData.peak || '09:00–11:00'} · You told me`;
+    if ($('aboutDipChip')) $('aboutDipChip').textContent = `${dip} · Dip window`;
+    if ($('aboutEnergyTag')) {
+      $('aboutEnergyTag').innerHTML = profileData.hypothesisConfirmed ? '<span style="color:#137333">✓ Rhythm confirmed</span>' : '<span style="color:var(--blue)">Active Profile</span>';
+    }
+    if ($('aboutHypothesisDesc')) {
+      $('aboutHypothesisDesc').textContent = `Based on your profile, you peak at ${profileData.peak || '09:00–11:00'} and dip around ${dip}. AI schedules demanding focus blocks in your peak window and protects recovery periods.`;
+    }
+    if ($('confirmHypothesisBtn')) {
+      if (profileData.hypothesisConfirmed) {
+        $('confirmHypothesisBtn').textContent = '✓ Confirmed';
+        $('confirmHypothesisBtn').style.background = '#137333';
+        $('confirmHypothesisBtn').style.color = '#ffffff';
+      } else {
+        $('confirmHypothesisBtn').textContent = 'That sounds right';
+        $('confirmHypothesisBtn').style.background = 'var(--blue)';
+        $('confirmHypothesisBtn').style.color = '#ffffff';
+      }
+    }
+
+    // Dynamic curve in "Your energy profile"
+    const aboutPath = $('aboutEnergyCurvePath');
+    if (aboutPath) {
+      let baseEnergies = [70, 95, 45, 75, 40];
+      if (chrono.includes('owl') || chrono.includes('night') || chrono.includes('сова')) {
+        baseEnergies = [35, 60, 70, 95, 85];
+      } else if (chrono.includes('intermediate') || chrono.includes('flexible')) {
+        baseEnergies = [60, 90, 55, 78, 50];
+      }
+      const xs = [0, 160, 320, 480, 636];
+      const coords = baseEnergies.map((eng, idx) => {
+        const y = 120 - ((eng / 100) * 110);
+        return {x: xs[idx], y: Math.max(8, Math.min(115, y))};
+      });
+      let d = `M ${coords[0].x} ${coords[0].y}`;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const p0 = coords[i], p1 = coords[i + 1];
+        const mx = (p0.x + p1.x) / 2;
+        d += ` C ${mx} ${p0.y}, ${mx} ${p1.y}, ${p1.x} ${p1.y}`;
+      }
+      aboutPath.setAttribute('d', d);
+    }
+
+    // Highlight active quick check-in chip
+    document.querySelectorAll('[data-checkin]').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.checkin === profileData.energyLossTime);
+    });
+    if ($('checkInStatusText')) {
+      $('checkInStatusText').textContent = profileData.energyLossTime ? `Saved: ${profileData.energyLossTime}. Used to avoid scheduling heavy focus then.` : 'No answer selected. You can skip this or change it later.';
+    }
   }
 
   
@@ -3678,7 +3781,51 @@ button:disabled { opacity: 0.55; cursor: wait; }
     } catch (error) { showToast(error.message); }
   }
 
-  // Profile editing
+  // Interactive Profile Presets & Editing
+  const profilePresets = {
+    chronotype: [
+      { icon: '🌅', label: 'Morning person (Lark)', desc: 'Peak energy 07:00–11:00 · Wake up early and start strong', val: 'Morning person' },
+      { icon: '⚡', label: 'Flexible rhythm', desc: 'Steady daylight focus 10:00–16:00 · Adaptable schedule', val: 'Flexible rhythm' },
+      { icon: '🦉', label: 'Night owl', desc: 'Peak focus late afternoon & evening 19:00–23:00', val: 'Night owl' }
+    ],
+    workHours: [
+      { icon: '🏢', label: '09:00–17:30 · Mon–Fri', desc: 'Standard business schedule (8.5h workday)', val: '09:00–17:30 · Mon–Fri' },
+      { icon: '☀️', label: '08:30–17:00 · Mon–Fri', desc: 'Early shift for calm, uninterrupted mornings', val: '08:30–17:00 · Mon–Fri' },
+      { icon: '🌆', label: '10:00–18:30 · Mon–Fri', desc: 'Late start with evening flow', val: '10:00–18:30 · Mon–Fri' },
+      { icon: '🚀', label: '09:00–19:00 · Mon–Sat', desc: 'Extended founder & startup rhythm', val: '09:00–19:00 · Mon–Sat' }
+    ],
+    focus: [
+      { icon: '🎯', label: '50 minutes', desc: 'Standard deep work block + 10m break (Recommended)', val: '50 minutes' },
+      { icon: '⏱️', label: '25 minutes', desc: 'Classic Pomodoro sprint + 5m micro-break', val: '25 minutes' },
+      { icon: '🚀', label: '90 minutes', desc: 'Ultradian flow block + 15m full mental reset', val: '90 minutes' },
+      { icon: '⚡', label: '120 minutes', desc: 'Extended 2-hour deep marathon', val: '120 minutes' }
+    ],
+    peak: [
+      { icon: '☀️', label: '09:00–11:00', desc: 'Morning prime focus window (Recommended)', val: '09:00–11:00' },
+      { icon: '🌅', label: '08:00–10:00', desc: 'Early morning quiet hours before team meetings', val: '08:00–10:00' },
+      { icon: '🌤️', label: '10:00–12:00', desc: 'Late morning productivity surge', val: '10:00–12:00' },
+      { icon: '🌇', label: '15:00–17:00', desc: 'Late afternoon deep work flow', val: '15:00–17:00' },
+      { icon: '🌙', label: '19:00–22:00', desc: 'Evening uninterrupted deep work', val: '19:00–22:00' }
+    ],
+    meetings: [
+      { icon: '💬', label: '11:00–14:00', desc: 'Midday meetings; avoid early mornings', val: '11:00–14:00' },
+      { icon: '☕', label: '14:00–17:00', desc: 'Afternoon calls only; protect morning focus', val: '14:00–17:00' },
+      { icon: '🛡️', label: '15 min buffer between calls', desc: 'Avoid back-to-back meeting fatigue', val: 'Prefer afternoons; 15 min buffer between calls' },
+      { icon: '🚫', label: 'No meetings before 11:00', desc: 'Strict focus time in the mornings', val: 'No meetings before 11:00' }
+    ],
+    break: [
+      { icon: '🚶', label: '10 minutes every 50 minutes', desc: 'Walk, water & stretch away from screen', val: '10 minutes every 50 minutes' },
+      { icon: '🧘', label: '15 minutes every 90 minutes', desc: 'Deep reset, disconnect and breathe', val: '15 minutes every 90 minutes' },
+      { icon: '⏱️', label: '5 minutes every 25 minutes', desc: 'Quick micro-pause between pomodoros', val: '5 minutes every 25 minutes' }
+    ],
+    personal: [
+      { icon: '🏃', label: 'Saturday · 16:15–17:15', desc: 'Protected workout / sports commitment', val: 'Saturday · 16:15–17:15' },
+      { icon: '🌆', label: 'Evenings after 18:00', desc: 'Strictly protect evening personal time', val: 'Evenings after 18:00' },
+      { icon: '🌿', label: 'Weekends offline', desc: 'Never schedule work on Sat & Sun', val: 'Weekends offline' },
+      { icon: '🌅', label: 'Morning 07:00–08:30', desc: 'Protected morning routine & workout', val: 'Morning 07:00–08:30' }
+    ]
+  };
+
   function openProfileEditModal(key) {
     editingProfileKey = key;
     const titles = {
@@ -3691,10 +3838,70 @@ button:disabled { opacity: 0.55; cursor: wait; }
       personal: 'Personal commitments'
     };
     $('profileEditTitle').textContent = `Edit ${titles[key] || 'Preference'}`;
-    $('profileEditLabel').textContent = titles[key] || 'Value';
-    $('profileEditInput').value = profileData[key] || '';
+    $('profileEditLabel').textContent = `${titles[key] || 'Preference'} value`;
+    const curVal = profileData[key] || '';
+    $('profileEditInput').value = curVal;
+
+    const container = $('profilePresetContainer');
+    if (container) {
+      container.innerHTML = '';
+      const presets = profilePresets[key] || [];
+      presets.forEach(p => {
+        const card = document.createElement('div');
+        const isActive = curVal.toLowerCase().includes(p.val.toLowerCase().slice(0, 8));
+        card.className = `profile-preset-card ${isActive ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="preset-icon">${p.icon}</div>
+          <div class="preset-info">
+            <div class="preset-title">${escapeHtml(p.label)}</div>
+            <div class="preset-desc">${escapeHtml(p.desc)}</div>
+          </div>
+          <div class="preset-check">✓</div>
+        `;
+        card.onclick = () => {
+          container.querySelectorAll('.profile-preset-card').forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
+          $('profileEditInput').value = p.val;
+        };
+        card.ondblclick = () => {
+          $('profileEditInput').value = p.val;
+          profileData[key] = p.val;
+          saveProfileToStorage();
+          $('profileEditModal').classList.remove('show');
+          showToast(`Saved: ${p.label}`);
+        };
+        container.appendChild(card);
+      });
+    }
+
     $('profileEditModal').classList.add('show');
     setTimeout(() => $('profileEditInput').focus(), 50);
+  }
+
+  function formatAiMessage(text) {
+    if (!text) return '';
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    const lines = s.split('\n');
+    let inList = false;
+    let out = [];
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) {
+        if (inList) { out.push('</ul>'); inList = false; }
+        continue;
+      }
+      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+        if (!inList) { out.push('<ul style="margin:6px 0;padding-left:20px;line-height:1.55">'); inList = true; }
+        const item = line.replace(/^[•\-\*]\s*/, '');
+        out.push(`<li style="margin-bottom:4px">${item}</li>`);
+      } else {
+        if (inList) { out.push('</ul>'); inList = false; }
+        out.push(`<p style="margin:0 0 8px 0;line-height:1.5">${line}</p>`);
+      }
+    }
+    if (inList) out.push('</ul>');
+    return out.join('');
   }
 
   // AI Chat and Audio handling
@@ -3731,7 +3938,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
         })
       });
       aiRow.querySelector('.msg-meta').innerHTML = `<svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l1.5 4.8 4.8 1.5-4.8 1.5L9 14.1l-1.5-4.8L2.7 7.8l4.8-1.5L9 1.5z" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/></svg> AI · ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-      aiRow.querySelector('.msg-body').innerHTML = `<p>${escapeHtml(data.reply || 'Schedule reviewed.')}</p>`;
+      aiRow.querySelector('.msg-body').innerHTML = formatAiMessage(data.reply || 'Schedule reviewed.');
       
       // If server returned proposals
       if (data.proposal && data.proposal.length) {
@@ -3744,29 +3951,137 @@ button:disabled { opacity: 0.55; cursor: wait; }
             <span class="not-saved-tag">Not saved</span>
           </div>
           <div class="proposal-adj-list">
-            ${data.proposal.slice(0, 5).map(c => `
+            ${data.proposal.slice(0, 6).map(c => `
               <div class="proposal-adj-item">
                 <span>${escapeHtml(c.start)}–${escapeHtml(c.end)} · ${escapeHtml(c.title)}</span>
-                <span class="sub-tag">${escapeHtml(c.action_label || 'Adjustment')}</span>
+                <span class="sub-tag">${escapeHtml(c.action_label || (c.old_start ? 'Move from ' + c.old_start : 'Adjustment'))}</span>
               </div>
             `).join('')}
           </div>
+          <p style="font-size:12px;color:var(--muted);margin:10px 0 12px">Protected personal time and confirmed appointments stay unchanged. Nothing has moved yet.</p>
           <div class="proposal-btns-row">
-            <button class="primary-btn" type="button" id="applyProposalDynamicBtn">Apply changes</button>
-            <button class="secondary-btn" type="button" id="dismissProposalDynamicBtn">Keep as is</button>
+            <button class="primary-btn" type="button" id="applyProposalDynamicBtn">Accept ${data.proposal.length} changes</button>
+            <button class="secondary-btn" type="button" id="reviewProposalDynamicBtn">Review in Day View</button>
           </div>
         `;
         pBox.querySelector('#applyProposalDynamicBtn').onclick = async () => {
           await api('/api/agent/apply', {method:'POST', body:JSON.stringify({changes: pendingProposal})});
           showToast('Changes applied to schedule!');
-          pBox.remove();
+          const tag = pBox.querySelector('.not-saved-tag');
+          if (tag) {
+            tag.textContent = 'Saved to Calendar';
+            tag.style.background = 'var(--green-soft)';
+            tag.style.color = '#1b7340';
+          }
+          pBox.querySelector('.proposal-btns-row').innerHTML = '<span style="font-size:13px;font-weight:600;color:var(--blue)">✓ Schedule adjustments confirmed and applied</span>';
           await refreshEvents();
         };
-        pBox.querySelector('#dismissProposalDynamicBtn').onclick = () => {
-          pendingProposal = null;
-          pBox.remove();
-          showToast('Changes dismissed.');
+        pBox.querySelector('#reviewProposalDynamicBtn').onclick = () => {
+          showView('day');
         };
+        aiRow.querySelector('.msg-body').appendChild(pBox);
+      } else if (data.event) {
+        // Single event created / updated
+        const ev = data.event;
+        const pBox = document.createElement('div');
+        pBox.className = 'proposal-box-card';
+        pBox.innerHTML = `
+          <div class="p-head">
+            <strong>Event Scheduled · ${escapeHtml(ev.date || selectedDate)}</strong>
+            <span class="not-saved-tag" style="background:#e6f4ea;color:#137333">Added to Calendar</span>
+          </div>
+          <div class="proposal-adj-list">
+            <div class="proposal-adj-item">
+              <span>${escapeHtml(ev.start)}–${escapeHtml(ev.end)} · ${escapeHtml(ev.title)}</span>
+              <span class="sub-tag">${escapeHtml(priorityNames[ev.priority] || 'Planned')} · ${escapeHtml(ev.category || 'Task')}</span>
+            </div>
+          </div>
+          <div class="proposal-btns-row">
+            <button class="primary-btn" type="button" id="viewCreatedEventBtn">View in Day Schedule</button>
+            <button class="secondary-btn" type="button" id="editCreatedEventBtn">Edit Details</button>
+          </div>
+        `;
+        pBox.querySelector('#viewCreatedEventBtn').onclick = () => {
+          selectedDate = ev.date || selectedDate;
+          showView('day');
+          renderAllViews();
+        };
+        pBox.querySelector('#editCreatedEventBtn').onclick = () => {
+          openEventModal(ev);
+        };
+        aiRow.querySelector('.msg-body').appendChild(pBox);
+      } else if (data.events && data.events.length) {
+        // Batch events created
+        const evs = data.events;
+        const pBox = document.createElement('div');
+        pBox.className = 'proposal-box-card';
+        pBox.innerHTML = `
+          <div class="p-head">
+            <strong>${evs.length} Events Scheduled · ${escapeHtml(evs[0].date || selectedDate)}</strong>
+            <span class="not-saved-tag" style="background:#e6f4ea;color:#137333">Added to Calendar</span>
+          </div>
+          <div class="proposal-adj-list">
+            ${evs.map(e => `
+              <div class="proposal-adj-item">
+                <span>${escapeHtml(e.start)}–${escapeHtml(e.end)} · ${escapeHtml(e.title)}</span>
+                <span class="sub-tag">${escapeHtml(priorityNames[e.priority] || 'Planned')}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="proposal-btns-row">
+            <button class="primary-btn" type="button" id="viewBatchEventsBtn">View in Day Schedule</button>
+          </div>
+        `;
+        pBox.querySelector('#viewBatchEventsBtn').onclick = () => {
+          selectedDate = evs[0].date || selectedDate;
+          showView('day');
+          renderAllViews();
+        };
+        aiRow.querySelector('.msg-body').appendChild(pBox);
+      } else if (data.choices && data.choices.length) {
+        // Choice conflict resolution
+        const pBox = document.createElement('div');
+        pBox.className = 'proposal-box-card';
+        pBox.innerHTML = `
+          <div class="p-head">
+            <strong>Scheduling Options</strong>
+            <span class="not-saved-tag" style="background:#fff3cd;color:#856404">Choice needed</span>
+          </div>
+          <div class="proposal-adj-list">
+            ${data.choices.map((ch, idx) => `
+              <div class="proposal-adj-item" style="cursor:pointer;background:#f9f9fb;padding:8px 10px;border-radius:8px;margin-bottom:6px" data-choice-idx="${idx}">
+                <div>
+                  <strong>${escapeHtml(ch.label)}</strong>
+                  <div style="font-size:11px;color:var(--muted)">${escapeHtml(ch.detail || '')}</div>
+                </div>
+                <button class="primary-btn" type="button" style="height:28px;padding:0 10px;font-size:11px">Select</button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        pBox.querySelectorAll('[data-choice-idx]').forEach(item => {
+          const idx = Number(item.dataset.choiceIdx);
+          const ch = data.choices[idx];
+          item.onclick = async () => {
+            try {
+              const res = await api('/api/agent/resolve', {
+                method: 'POST',
+                body: JSON.stringify({pending_id: data.pending_id, choice_id: ch.id})
+              });
+              showToast(res.message || 'Choice applied!');
+              const tag = pBox.querySelector('.not-saved-tag');
+              if (tag) {
+                tag.textContent = 'Applied';
+                tag.style.background = 'var(--green-soft)';
+                tag.style.color = '#1b7340';
+              }
+              pBox.querySelector('.proposal-adj-list').innerHTML = `<div style="font-size:13px;color:var(--blue);font-weight:600">✓ ${escapeHtml(ch.label)}</div>`;
+              await refreshEvents();
+            } catch (err) {
+              showToast(err.message);
+            }
+          };
+        });
         aiRow.querySelector('.msg-body').appendChild(pBox);
       }
 
@@ -4103,7 +4418,8 @@ button:disabled { opacity: 0.55; cursor: wait; }
   document.addEventListener('keydown',e=>{if(e.key==='Enter'&&voiceRecording&&e.target!==$('agentInput')&&!e.shiftKey){e.preventDefault();e.stopPropagation();stopVoiceRecording({sendToAgent:true});}if(e.key==='Escape')closeEventModal();},true);
 
   // About you / Profile controls
-  document.querySelectorAll('[data-edit-profile]').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('[data-edit-profile]').forEach(btn => btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     openProfileEditModal(btn.dataset.editProfile);
   }));
 
