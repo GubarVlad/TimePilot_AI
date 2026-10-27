@@ -129,19 +129,30 @@ class ScoutIntentEngine:
         elif m_dur_mins:
             duration_minutes = int(m_dur_mins.group(1))
 
-        # 4. Extract Explicit Time
+        # 4. Extract Explicit Time (supports 14:00, 2 PM, 2:30 pm, в 14:00)
         time_hint = None
-        m_time = re.search(r"\b(?:at|in|в|c|с)\s*([012]?\d:[0-5]\d)\b", text)
-        if m_time:
-            time_hint = m_time.group(1)
-            if len(time_hint) == 4:
-                time_hint = "0" + time_hint
+        m_time_12h = re.search(r"\b(?:at|в|к|c|с)?\s*([01]?\d)(?::([0-5]\d))?\s*(am|pm)\b", text, re.IGNORECASE)
+        if m_time_12h:
+            h = int(m_time_12h.group(1))
+            m = int(m_time_12h.group(2) or 0)
+            meridiem = m_time_12h.group(3).lower()
+            if meridiem == "pm" and h < 12:
+                h += 12
+            elif meridiem == "am" and h == 12:
+                h = 0
+            time_hint = f"{h:02d}:{m:02d}"
         else:
-            m_simple_time = re.search(r"\b(?:at|в|к)\s*([012]?\d)(?:\s*(?:am|pm|ч|час|часов|:00))?\b", text)
-            if m_simple_time:
-                h = int(m_simple_time.group(1))
-                if 0 <= h <= 23:
-                    time_hint = f"{h:02d}:00"
+            m_time = re.search(r"\b(?:at|in|в|c|с)\s*([012]?\d:[0-5]\d)\b", text)
+            if m_time:
+                time_hint = m_time.group(1)
+                if len(time_hint) == 4:
+                    time_hint = "0" + time_hint
+            else:
+                m_simple_time = re.search(r"\b(?:at|в|к)\s*([012]?\d)(?:\s*(?:ч|час|часов|:00))?\b", text)
+                if m_simple_time:
+                    h = int(m_simple_time.group(1))
+                    if 0 <= h <= 23:
+                        time_hint = f"{h:02d}:00"
 
         # 5. Extract Title Candidate
         cleaned = re.sub(
