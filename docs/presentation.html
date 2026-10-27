@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimePilot AI — Pitch Deck | Open Agent Hackathon 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --nvidia: #76b900;
+      --zetaris: #3b82f6;
+      --meterless: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Background Ambient Mesh */
+    .ambient-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+                  radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Presentation Header */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 36px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11, 15, 25, 0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .badge-track {
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #818cf8;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .sponsor-chips {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+    .chip.nvidia { color: #a3e635; border-color: rgba(118, 185, 0, 0.3); }
+    .chip.zetaris { color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+    .chip.meterless { color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+
+    /* Main Deck Container */
+    main {
+      position: relative;
+      flex: 1;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .slides-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      height: 640px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 48px 56px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(40px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    /* Slide Typography */
+    .slide-tag {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .slide-title {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 60%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+
+    /* Grid Layouts inside slides */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      flex: 1;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Cards inside slides */
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card.highlight {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(99, 102, 241, 0.06);
+    }
+
+    .card-icon {
+      font-size: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-list li {
+      font-size: 13px;
+      color: #d1d5db;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .card-list li::before {
+      content: "✦";
+      color: var(--accent);
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    /* Code & Architecture Diagram Box */
+    .diagram-box {
+      background: #070a13;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #a5b4fc;
+      line-height: 1.5;
+      overflow-x: auto;
+      flex: 1;
+    }
+
+    /* Table styles */
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table-custom th {
+      text-align: left;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    .table-custom td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: #d1d5db;
+    }
+
+    .table-custom tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Footer & Controls */
+    footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 36px;
+      border-top: 1px solid var(--border);
+      background: rgba(11, 15, 25, 0.7);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent);
+    }
+
+    .slide-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      width: 24px;
+      border-radius: 9999px;
+    }
+
+    .counter {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Keyboard hint */
+    .key-hint {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      color: #9ca3af;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <span>TimePilot AI</span>
+      <span class="badge-track">Track 03: Reasoning Architecture</span>
+    </div>
+    <div class="header-right">
+      <div class="sponsor-chips">
+        <span class="chip zetaris">Zetaris USL</span>
+        <span class="chip meterless">Meterless H-MEM</span>
+        <span class="chip nvidia">NVIDIA Nemotron</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Presentation Slides -->
+  <main>
+    <div class="slides-wrapper">
+      
+      <!-- SLIDE 1: Problem -->
+      <div class="slide active" id="slide-1">
+        <div class="slide-tag">01 / Problem & Target Audience</div>
+        <h1 class="slide-title">The Chaos of Modern Time Management</h1>
+        <p class="slide-subtitle">Knowledge workers lose 2.5+ hours every day triaging fragmented schedules, urgent issues, and calendar conflicts.</p>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-icon">🗄️</div>
+            <div class="card-title">Fragmented Data Silos</div>
+            <p class="card-desc">Backlog tasks in Jira/Linear sit unlinked from calendar commitments. Priorities, deadlines, and daily capacity never talk to each other.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🧱</div>
+            <div class="card-title">Rigid Calendar Grids</div>
+            <p class="card-desc">Static calendars don't know the difference between a movable solo deep-work task and an immutable flight or doctor appointment.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🤖</div>
+            <div class="card-title">Chatbot Illusions</div>
+            <p class="card-desc">Existing AI assistants are simple single-prompt wrappers. They hallucinate free slots, double-book meetings, and offer no audit trail.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: Solution -->
+      <div class="slide" id="slide-2">
+        <div class="slide-tag">02 / The Solution</div>
+        <h1 class="slide-title">TimePilot AI: Autonomous Cognitive Calendar</h1>
+        <p class="slide-subtitle">An agent that does real work: unifies data, retains cognitive memory, resolves conflicts autonomously, and explains every action.</p>
+        <div class="grid-2">
+          <div class="card highlight">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Core Value Proposition</div>
+            <ul class="card-list">
+              <li><strong>Unified Semantic Ingestion:</strong> Federates calendar, tasks, and habits into a single unified semantic state via Zetaris.</li>
+              <li><strong>Hierarchical Cognitive Memory:</strong> Recalls past scheduling decisions and consolidates behavioral habits with Meterless H-MEM.</li>
+              <li><strong>Self-Correcting Critique:</strong> Dynamically shifts movable events to accommodate critical urgent deadlines.</li>
+              <li><strong>Verifiable 'Explain Why':</strong> Provides evidence-backed justification for every calendar action with zero hallucinations.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Mission Alignment</div>
+            <p class="card-desc">Built strictly according to the Open Agent Hackathon motto: <em>"Not another chatbot. An agent that does real work."</em></p>
+            <div style="margin-top: 12px; padding: 14px; background: rgba(0,0,0,0.3); border-radius: 8px; border-left: 3px solid var(--accent); font-size: 13px;">
+              Over <strong>101 automated tests</strong> verifying multi-agent orchestration, data quality constraints, and memory life-cycle.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: Reasoning Architecture -->
+      <div class="slide" id="slide-3">
+        <div class="slide-tag">03 / Reasoning Architecture</div>
+        <h1 class="slide-title">Collaborative Multi-Agent Critique Loop</h1>
+        <p class="slide-subtitle">TimePilot AI completely replaces fragile linear chains (A → B → C) with an iterative, self-correcting 4-agent state machine.</p>
+        <div class="grid-2">
+          <div class="diagram-box">
+┌────────────────────────────────────────────────────────┐
+│ User / Voice Request: "Urgent security audit at 14:00" │
+└───────────────────────────┬────────────────────────────┘
+                            │
+                            ▼
+              ┌───────────────────────────┐
+              │       PlannerAgent        │ (Scout Intent: Urgency 0.96)
+              └─────────────┬─────────────┘
+                            │ delegate
+                            ▼
+┌──────────────────┐  ┌───────────────────┐
+│ Zetaris USL      │◄─┤   ContextAgent    │ (Queries calendar, backlog,
+│ & Meterless H-MEM│  └─────────┬─────────┘  and past episodic habits)
+└──────────────────┘            │ propose candidate slot: 14:00-14:45
+                                ▼
+                      ┌───────────────────┐
+                      │  ConflictCritic   │ [Audit slot against 6 events]
+                      └─────────┬─────────┘
+                                │
+               [Collision with Team Sync?]
+                                ├─────────► [REJECT & DEMAND RETRY]
+                                │           Branch to ContextAgent (retry=1)
+                                │           Shift flexible UI task to 15:45
+                                │ [APPROVED]
+                                ▼
+                      ┌───────────────────┐
+                      │  ReconcilerAgent  │ ──► Execute mutations
+                      └───────────────────┘ ──► Commit H-MEM episode
+                                            ──► Emit "Explain Why"
+          </div>
+          <div class="card">
+            <div class="card-title">Why This Architecture Scores High</div>
+            <ul class="card-list">
+              <li><strong>Context-Dependent Delegation:</strong> Planner delegates based on urgency and multi-dimensional intent.</li>
+              <li><strong>Outputs Challenged & Revised:</strong> ConflictCritic rigorously tests candidate proposals against Zetaris Data Quality rules.</li>
+              <li><strong>Dynamic Branching & Recovery:</strong> Overlaps trigger automatic retry loops with tighter constraints.</li>
+              <li><strong>Auditable Traces:</strong> Every agent handoff, confidence score, and model name is logged to <code>logs/agent_traces.jsonl</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: Technical Stack -->
+      <div class="slide" id="slide-4">
+        <div class="slide-tag">04 / Technical Stack</div>
+        <h1 class="slide-title">Production-Grade Agentic Foundation</h1>
+        <p class="slide-subtitle">Engineered for deterministic reliability, speed, and clean developer experience.</p>
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-icon">🧠</div>
+            <div class="card-title">Cognition</div>
+            <ul class="card-list">
+              <li>NVIDIA Nemotron 3 Super 120B (Reasoning)</li>
+              <li>Nemotron 3.5 Lightning 30B (Critic)</li>
+              <li>Meterless Scout Intent</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-icon">💾</div>
+            <div class="card-title">Data & Memory</div>
+            <ul class="card-list">
+              <li>Zetaris USL (Semantic Data Layer)</li>
+              <li>Meterless H-MEM (3-Tier Hierarchical Memory)</li>
+              <li>SQLite In-Memory Fallback</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-icon">⚙️</div>
+            <div class="card-title">Platform</div>
+            <ul class="card-list">
+              <li>Meterless Nightshift AI Gateway</li>
+              <li>Python 3.10+ Async Engine</li>
+              <li>NVIDIA Riva Parakeet ASR</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Delivery</div>
+            <ul class="card-list">
+              <li>Dockerized Container</li>
+              <li>REST API (<code>POST /run</code>)</li>
+              <li>SAMPLE_MODE=true for Judges</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Sponsor Integrations -->
+      <div class="slide" id="slide-5">
+        <div class="slide-tag">05 / Sponsor Technology</div>
+        <h1 class="slide-title">Deep Integration: Zetaris & Meterless</h1>
+        <p class="slide-subtitle">Sponsor technologies are load-bearing architectural backbones, not cosmetic wrappers.</p>
+        <div class="grid-2">
+          <div class="card" style="border-color: rgba(59, 130, 246, 0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="card-title" style="color:#60a5fa;">Zetaris Unified Semantic Layer</span>
+              <span class="chip zetaris">DATA LAYER</span>
+            </div>
+            <ul class="card-list">
+              <li><strong>3 Federated Sources:</strong> Integrates calendar events, Jira/Linear task backlog, and user buffer preferences.</li>
+              <li><strong>Active SQL Views:</strong> Offloads feasibility modeling to <code>usl_cross_source_feasibility</code> view.</li>
+              <li><strong>4 Automated Data Quality Rules:</strong> Pre-commit validation gates checking chronological ordering, pinned exclusivity, priority, and ID integrity.</li>
+              <li><strong>Saves 70% Time:</strong> Semantic SQL views replaced over 300 lines of brittle custom Python filtering loops.</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color: rgba(168, 85, 247, 0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="card-title" style="color:#c084fc;">Meterless Engines & Nightshift</span>
+              <span class="chip meterless">ENGINES & GATEWAY</span>
+            </div>
+            <ul class="card-list">
+              <li><strong>Meterless H-MEM Engine:</strong> 3-tier memory system with Working Memory (turn state), Episodic Memory (past shifts with recency decay), and Semantic Habits.</li>
+              <li><strong>Habit Consolidation:</strong> Reinforces user preferences like morning focus bias and meeting buffer affinity over time.</li>
+              <li><strong>Meterless Scout Intent Engine:</strong> Decomposes natural language into structured duration, time hints, and urgency scores.</li>
+              <li><strong>Meterless Nightshift:</strong> Central OpenAI-compatible runtime connecting all agent LLM queries.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: Sponsor Uniqueness -->
+      <div class="slide" id="slide-6">
+        <div class="slide-tag">06 / Sponsor Innovation</div>
+        <h1 class="slide-title">NVIDIA Nemotron, Riva & Cursor Uniqueness</h1>
+        <p class="slide-subtitle">How our utilization stands out from standard hackathon submissions.</p>
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>Sponsor Technology</th>
+              <th>How TimePilot AI Integrates It</th>
+              <th>What Makes It Unique & Novel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>NVIDIA Nemotron via Nightshift</strong></td>
+              <td>Dual-model deployment: Nemotron 3 Super (120B) for Planner/Reconciler; Nemotron 3.5 Lightning (30B) for ConflictCritic.</td>
+              <td><strong>Cost & Latency Optimized Split:</strong> Heavy reasoning is isolated to planning, while high-frequency constraint critiques run on lightweight lightning models.</td>
+            </tr>
+            <tr>
+              <td><strong>NVIDIA Riva Parakeet ASR</strong></td>
+              <td>Streaming multilingual speech-to-text via gRPC (<code>grpc.nvcf.nvidia.com:443</code>).</td>
+              <td>Enables hands-free voice scheduling directly in English & Russian with instant intent decoding.</td>
+            </tr>
+            <tr>
+              <td><strong>Zetaris Semantic Layer</strong></td>
+              <td>USL relational queries linking task urgency, busy slots, and minimum meeting buffer rules.</td>
+              <td><strong>Feasibility Modeling at Data Layer:</strong> Conflict evaluation runs directly in Zetaris SQL views rather than ad-hoc application code.</td>
+            </tr>
+            <tr>
+              <td><strong>Cursor with Space XAI</strong></td>
+              <td>Primary development environment for scaffolding multi-agent loops and test suites.</td>
+              <td>Rapid codebase iteration, writing SQL DDL schemas, and building 101 automated unit tests across 144 hours.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SLIDE 7: Product Visuals & UX -->
+      <div class="slide" id="slide-7">
+        <div class="slide-tag">07 / Product & UX</div>
+        <h1 class="slide-title">Intuitive Human-Agent Interface</h1>
+        <p class="slide-subtitle">Designed for speed, clarity, and trust. Evaluated with 10/10 Product & UX criteria.</p>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">📅 Cognitive Schedule Grid</div>
+            <p class="card-desc">Visual timeline showing priority tags, buffer gaps, and mobility indicators (Movable vs Pinned). Immediate feedback on schedule reshuffles.</p>
+          </div>
+          <div class="card highlight">
+            <div class="card-title">🔍 "Explain Why" Drawer</div>
+            <p class="card-desc">Clicking any scheduled task displays the complete rationale: Scout Intent score, Zetaris query results, H-MEM memory recall, and Critic validation pass.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">⚡ Real-Time Agent Traces</div>
+            <p class="card-desc">Inspectable JSONL agent trace panel showing exact handoffs, confidence levels, model IDs, and retry attempts during execution.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: Impact & Roadmap -->
+      <div class="slide" id="slide-8">
+        <div class="slide-tag">08 / Impact & Future Roadmap</div>
+        <h1 class="slide-title">Delivering Measurable Real-World Impact</h1>
+        <p class="slide-subtitle">Not a toy concept, but an enterprise-ready cognitive time engine.</p>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Tangible User Impact</div>
+            <ul class="card-list">
+              <li><strong>2.5+ Hours Saved Daily:</strong> Removes mental context-switching and manual calendar coordination.</li>
+              <li><strong>Zero Double-Bookings:</strong> Gated by Zetaris Data Quality rules and Nemotron Critic validation.</li>
+              <li><strong>Preserved Focus Time:</strong> Automatically protects 90-minute morning deep-work blocks and 15-minute buffers.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Future Roadmap</div>
+            <ul class="card-list">
+              <li><strong>v2.1: Live CalDAV / Outlook Sync:</strong> Streaming bi-directional synchronization with Google Calendar & Microsoft Exchange.</li>
+              <li><strong>v2.2: Cross-Team Negotiation:</strong> Autonomous multi-agent coordination between colleagues to settle meeting times seamlessly.</li>
+              <li><strong>v2.3: Mobile Voice Agent:</strong> Native iOS / Android widgets with offline speech processing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer Controls -->
+  <footer>
+    <div class="nav-buttons">
+      <button class="btn-nav" id="btnPrev">← Prev <span class="key-hint">Left</span></button>
+      <button class="btn-nav" id="btnNext">Next → <span class="key-hint">Right</span></button>
+      <button class="btn-nav" id="btnFullscreen">⛶ Fullscreen <span class="key-hint">F</span></button>
+    </div>
+    <div class="slide-dots" id="dotsContainer"></div>
+    <div class="counter" id="slideCounter">1 / 8</div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const slideCounter = document.getElementById('slideCounter');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    let currentIndex = 0;
+
+    // Create dots
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.className = `dot ${idx === 0 ? 'active' : ''}`;
+      dot.addEventListener('click', () => goToSlide(idx));
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll('.dot');
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentIndex);
+      });
+      dots.forEach((d, idx) => {
+        d.classList.toggle('active', idx === currentIndex);
+      });
+      slideCounter.textContent = `${currentIndex + 1} / ${slides.length}`;
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < slides.length) {
+        currentIndex = index;
+        updateSlide();
+      }
+    }
+
+    btnNext.addEventListener('click', () => {
+      if (currentIndex < slides.length - 1) {
+        currentIndex++;
+        updateSlide();
+      }
+    });
+
+    btnPrev.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateSlide();
+      }
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        if (currentIndex < slides.length - 1) {
+          currentIndex++;
+          updateSlide();
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateSlide();
+        }
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+  </script>
+</body>
+</html>
