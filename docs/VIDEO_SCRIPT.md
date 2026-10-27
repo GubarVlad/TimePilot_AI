@@ -1,90 +1,113 @@
-# TimePilot AI — Simple Demo Video Script (Easy English)
+# TimePilot AI — Video Recording Script (Super Simple Teleprompter)
 
-> **Duration:** ~2.5 minutes (Target: between 1 and 4 minutes)  
-> **Style:** Natural, conversational, clear, simple English without complex jargon.  
-> **Key goal:** 15/15 Demo points + 10/10 Sponsor Tech points.
-
----
-
-## 🎬 Step-by-Step Recording Guide
-
-### 1. Introduction (0:00 – 0:30)
-* **On Screen:** Open the TimePilot AI calendar (`http://localhost:8000`). Show the clean schedule grid with existing meetings and tasks.
-* **What to Say:**
-  > *"Hi everyone! This is **TimePilot AI** — an autonomous AI calendar agent built for the **Reasoning Architecture** track at the Open Agent Hackathon 2026.*  
-  >  
-  > *Our mission is simple: **Not another chatbot, but an agent that does real work.***  
-  >  
-  > *Today, scheduling is messy. Urgent tasks sit forgotten in Jira backlogs, calendars ignore meeting buffers, and standard AI chatbots don't really help — they hallucinate free slots and break our schedules. TimePilot AI fixes this."*
+> **Total Time:** ~2 minutes  
+> **How to use:** Read ONLY the text inside the **"🎙️ READ OUT LOUD"** blocks.  
+> Every sentence is short and easy to speak!
 
 ---
 
-### 2. Live Demo: Resolving a Real Conflict (0:30 – 1:20)
-* **On Screen:** Type in the chat box:  
-  `Urgent: schedule security token leak audit at 2 PM for 45 minutes`  
-  and press Enter.
-* **What to Show:**
-  - Notice that 2:00 PM is already busy with an important **Team Project Sync**.
-  - Show TimePilot placing the urgent audit at **3:00 PM – 3:45 PM**.
-  - Show the flexible **UI Prototyping** task moving automatically from **3:30 PM to 3:45 PM**.
-  - Click on the event card to open the **Explain Why** drawer.
-* **What to Say:**
-  > *"Let me show you a real example.*  
-  >  
-  > *I type: 'Urgent: schedule security token leak audit at 2 PM for 45 minutes'.*  
-  >  
-  > *Notice that 2 PM is already booked for our Team Sync meeting!*  
-  >  
-  > *Instead of breaking the calendar or showing an error, TimePilot reasons through the problem. The **Conflict Critic** agent sees the collision and says 'no'.*  
-  >  
-  > *Then, the agent checks which tasks are flexible. It finds an open slot at 3 PM for our urgent audit, and automatically moves our flexible UI session by 15 minutes.*  
-  >  
-  > *If I click on the task, the **Explain Why** window shows the full evidence behind this decision."*
+## 🟢 PART 1: INTRO (0:00 – 0:30)
+
+### 🖥️ WHAT TO SHOW ON SCREEN:
+- Open your browser at `http://localhost:8000`.
+- Show the clean calendar screen.
+
+### 🎙️ READ OUT LOUD:
+> "Hi everyone!  
+> I am excited to show you **TimePilot AI**.  
+>  
+> This is an AI calendar agent that does real work.  
+> We built it for the **Reasoning Architecture** track.  
+>  
+> Why did we build this?  
+> Because managing your calendar is hard.  
+> You have meetings in your calendar.  
+> You have urgent tasks in Jira.  
+> And regular AI chatbots are not helpful. They just make things up and break your schedule.  
+>  
+> TimePilot fixes that."
 
 ---
 
-### 3. Agent Traces & Reasoning Architecture (1:20 – 1:55)
-* **On Screen:** Switch to the terminal showing `logs/agent_traces.jsonl` or expand the live Traces panel.
-* **What to Show:** Point out the steps:
-  - `PlannerAgent` (finds urgency)
-  - `ContextAgent` (reads schedule)
-  - `ConflictCritic` (gives a red/yellow warning and triggers retry)
-  - `ReconcilerAgent` (approves final plan)
-  - NVIDIA Nemotron model names in the logs.
-* **What to Say:**
-  > *"Now, let's look at the live traces.*  
-  >  
-  > *This is not a simple linear chain. It is an active 4-agent loop:*  
-  > *- **Planner Agent** checks user intent and urgency.*  
-  > *- **Context Agent** pulls schedule data from Zetaris.*  
-  > *- **Conflict Critic** tests constraints, rejects bad slots, and asks for a retry.*  
-  > *- And **Reconciler Agent** saves the verified plan.*  
-  >  
-  > *You can see every step logs the exact NVIDIA model doing the work: **Nemotron 3 Super** for deep planning, and **Nemotron 3.5 Lightning** for fast checks."*
+## 🟢 PART 2: LIVE DEMO (0:30 – 1:15)
+
+### 🖥️ WHAT TO SHOW ON SCREEN:
+- Click the chat box.
+- Type: `Urgent: schedule security audit at 2 PM for 45 minutes`
+- Press Enter.
+- Watch 3:00 PM get scheduled, and watch UI Prototyping move to 3:45 PM.
+- Click on the task to open the "Explain Why" box.
+
+### 🎙️ READ OUT LOUD:
+> "Let's see a live demo.  
+>  
+> I will type:  
+> *'Urgent: schedule security audit at 2 PM for 45 minutes'*.  
+>  
+> Look at the calendar.  
+> 2 PM is already busy with our Team Sync meeting!  
+>  
+> A regular chatbot would just make a mistake or double-book.  
+> But TimePilot is smarter.  
+>  
+> Our Critic agent checks the rules and says: *'No, 2 PM is blocked.'*  
+>  
+> So it finds a new slot at 3 PM.  
+> And it moves our flexible design task to 3:45 PM.  
+>  
+> If I click the task, look here:  
+> TimePilot explains **WHY** it made this choice.  
+> Everything is clear and verified."
 
 ---
 
-### 4. Sponsor Technologies (1:55 – 2:30)
-* **On Screen:** Run `python3 -m unittest discover tests` in terminal (101 tests pass) and show `data/zetaris_usl_ddl.sql`.
-* **What to Say:**
-  > *"All sponsor tools do real, necessary work:*  
-  > *- **Zetaris** is our data layer. It connects calendar events, Jira tasks, and user preferences into one clean layer with automated data quality checks.*  
-  > *- **Meterless** gives our agent memory. The H-MEM engine remembers past decisions so the agent learns user habits over time.*  
-  > *- **NVIDIA** powers our intelligence with Nemotron models and Riva voice recognition.*  
-  > *- And we used **Cursor with SpaceX AI** as our IDE to build this system and write 101 automated unit tests."*
+## 🟢 PART 3: AGENTS & TRACES (1:15 – 1:45)
+
+### 🖥️ WHAT TO SHOW ON SCREEN:
+- Switch to your terminal showing `tail -f logs/agent_traces.jsonl` (or the Traces panel in the UI).
+- Point to the agent names and the model names.
+
+### 🎙️ READ OUT LOUD:
+> "Now let's look at the traces under the hood.  
+>  
+> This is a real 4-agent team:  
+> 1. **Planner Agent** finds the urgent goal.  
+> 2. **Context Agent** gets schedule data from Zetaris.  
+> 3. **Conflict Critic** checks constraints and rejects bad slots.  
+> 4. And **Reconciler Agent** saves the final plan.  
+>  
+> Every step runs on real **NVIDIA Nemotron** models through **Meterless**."
 
 ---
 
-### 5. Conclusion (2:30 – 2:45)
-* **On Screen:** Back to the clean calendar screen or show the GitHub repo.
-* **What to Say:**
-  > *"Judges can test TimePilot in one command using Docker, or in Sample Mode with zero setup.*  
-  >  
-  > *TimePilot turns calendar chaos into reliable, clear action. Our code is 100% public on GitHub. Thank you for watching!"*
+## 🟢 PART 4: SPONSORS (1:45 – 2:15)
+
+### 🖥️ WHAT TO SHOW ON SCREEN:
+- Run `python3 -m unittest discover tests` in the terminal.
+- Show that all 101 tests pass!
+
+### 🎙️ READ OUT LOUD:
+> "All sponsor tools do real work here:  
+>  
+> **Zetaris** is our data layer. It connects calendar events, task backlogs, and buffer rules in one place.  
+>  
+> **Meterless** gives our agent memory, so it learns user habits over time.  
+>  
+> **NVIDIA** powers our intelligence with Nemotron models.  
+>  
+> And we used **Cursor** as our coding tool."
 
 ---
 
-## 💡 Quick Tips for Clear Speech:
-1. Speak at a calm, relaxed pace.
-2. Pause for 1 second between steps so the viewer can see the screen change.
-3. Don't worry about sounding perfect — clear, simple sentences sound best!
+## 🟢 PART 5: FINISH (2:15 – 2:30)
+
+### 🖥️ WHAT TO SHOW ON SCREEN:
+- Show your GitHub repo or the calendar.
+
+### 🎙️ READ OUT LOUD:
+> "Judges can run this project in one command with Docker, or in Sample Mode without any API keys.  
+>  
+> All 101 tests pass.  
+>  
+> Our code is 100% public on GitHub.  
+> Thank you for watching!"
