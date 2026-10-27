@@ -1,61 +1,7 @@
 {
   "version": 1,
-  "updated_at": "2026-10-27T09:19:56.514944+00:00",
+  "updated_at": "2026-10-27T16:41:06.225088+00:00",
   "episodic_memory": [
-    {
-      "episode_id": "ep_3_1793089581",
-      "timestamp": "2026-10-27T08:26:21.727446+00:00",
-      "intent_type": "EXPLAIN_WHY",
-      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
-      "decision_taken": "Assigned slot 08:30-09:30",
-      "user_feedback": "accepted",
-      "tags": [
-        "scheduling",
-        "medium",
-        "hmem_habit_aligned_free_slot"
-      ]
-    },
-    {
-      "episode_id": "ep_4_1793089590",
-      "timestamp": "2026-10-27T08:26:30.459844+00:00",
-      "intent_type": "QUERY_FREE_TIME",
-      "context_summary": "Scheduled 'Найди свободное окно на полтора часа для стратегического планирования, не задевая визит к врачу' at 17:00 on 2026-10-27",
-      "decision_taken": "Assigned slot 17:00-18:30",
-      "user_feedback": "accepted",
-      "tags": [
-        "scheduling",
-        "medium",
-        "critic_adjusted_slot",
-        "shift_movable"
-      ]
-    },
-    {
-      "episode_id": "ep_5_1793089722",
-      "timestamp": "2026-10-27T08:28:42.293690+00:00",
-      "intent_type": "SCHEDULE_NEW_TASK",
-      "context_summary": "Scheduled 'Срочно добавь аудит утечки токенов безопасности' at 15:00 on 2026-10-27",
-      "decision_taken": "Assigned slot 15:00-15:45",
-      "user_feedback": "accepted",
-      "tags": [
-        "scheduling",
-        "urgent",
-        "critic_adjusted_slot",
-        "shift_movable"
-      ]
-    },
-    {
-      "episode_id": "ep_6_1793089722",
-      "timestamp": "2026-10-27T08:28:42.295995+00:00",
-      "intent_type": "EXPLAIN_WHY",
-      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
-      "decision_taken": "Assigned slot 08:30-09:30",
-      "user_feedback": "accepted",
-      "tags": [
-        "scheduling",
-        "medium",
-        "hmem_habit_aligned_free_slot"
-      ]
-    },
     {
       "episode_id": "ep_7_1793089722",
       "timestamp": "2026-10-27T08:28:42.298076+00:00",
@@ -674,6 +620,60 @@
         "medium",
         "hmem_habit_aligned_free_slot"
       ]
+    },
+    {
+      "episode_id": "ep_51_1793119265",
+      "timestamp": "2026-10-27T16:41:05.045373+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_51_1793119266",
+      "timestamp": "2026-10-27T16:41:06.214614+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_51_1793119266",
+      "timestamp": "2026-10-27T16:41:06.218791+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_51_1793119266",
+      "timestamp": "2026-10-27T16:41:06.225083+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
     }
   ],
   "semantic_habits": {
@@ -711,7 +711,7 @@
       "habit_key": "flexible_task_shift_preference",
       "description": "When high priority items arrive, prefer shifting movable tasks over declining",
       "confidence": 0.99,
-      "evidence_count": 33,
+      "evidence_count": 35,
       "preferred_value": {
         "shift_strategy": "forward_slot"
       }

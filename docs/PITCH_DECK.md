@@ -154,3 +154,4 @@ TimePilot AI rejects single-pass pipelines. It implements a **4-agent collaborat
 
 > **Try it now:** `git clone https://github.com/GubarVlad/TimePilot_AI.git`  
 > Run in Sample Mode: `SAMPLE_MODE=true python run.py --input input_examples/example_1.json`
+
