@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f5f7">
-  <title>TimePilot AI — календарь и умный помощник</title>
+  <title>TimePilot AI — Autonomous Cognitive Calendar</title>
   <style>
 :root {
   --bg: #f5f5f7;
@@ -1923,7 +1923,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
         <small>TODAY</small>
         <strong id="headerDate">Oct 26, 2026</strong>
       </div>
-      <button class="gear-btn" id="configureAiBtn" type="button" aria-label="Настроить AI" title="Настроить облачный AI">⚙</button>
+      <button class="gear-btn" id="configureAiBtn" type="button" aria-label="Configure AI" title="Configure AI Settings">⚙</button>
     </div>
   </header>
 
@@ -2038,9 +2038,9 @@ button:disabled { opacity: 0.55; cursor: wait; }
           <div class="week-card-top">
             <h2 id="weekLabel">October 19–25</h2>
             <div class="week-nav-arrows">
-              <button type="button" id="prevWeek" aria-label="Предыдущая неделя">‹</button>
+              <button type="button" id="prevWeek" aria-label="Previous week">‹</button>
               <button type="button" id="todayBtn" style="background:transparent;border:0;color:var(--ink);font-weight:600">Today</button>
-              <button type="button" id="nextWeek" aria-label="Следующая неделя">›</button>
+              <button type="button" id="nextWeek" aria-label="Next week">›</button>
             </div>
           </div>
 
@@ -2366,7 +2366,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
     <!-- ======================================================== -->
     <!-- SCREEN 5: AI CHAT VIEW                                   -->
     <!-- ======================================================== -->
-    <section class="view-panel" id="chatView" aria-label="AI-агент" data-view-panel="chat" hidden>
+    <section class="view-panel" id="chatView" aria-label="AI Agent" data-view-panel="chat" hidden>
       <div class="view-heading">
         <div class="view-heading-copy">
           <h1>AI chat</h1>
@@ -2414,7 +2414,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13.3 5L6.3 12.2c-.6.6-.6 1.6 0 2.2.6.6 1.6.6 2.2 0l7-7.2c1.2-1.2 1.2-3.2 0-4.4-1.2-1.2-3.2-1.2-4.4 0L4 9.8c-1.8 1.8-1.8 4.7 0 6.5s4.7 1.8 6.5 0l7-7.1" stroke="#636366" stroke-width="1.6" stroke-linecap="round"/></svg>
               </button>
               <input type="text" id="agentInput" placeholder="Ask about your schedule…" maxlength="2000" autocomplete="off">
-              <button class="icon-tool-btn mic-btn" id="micBtn" type="button" aria-label="Голосовой ввод">
+              <button class="icon-tool-btn mic-btn" id="micBtn" type="button" aria-label="Voice input">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>
               </button>
               <button class="round-send-btn" id="sendBtn" type="submit" aria-label="Send">
@@ -2906,15 +2906,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
       "Meeting preferences": profileData.meetings || "Prefer afternoons; 15 min buffer between calls",
       "Break habits": profileData.break || "10 minutes every 50 minutes",
       "Personal commitments": profileData.personal || "Evening",
-      "Energy dip window": profileData.energyLossTime || "14:00–15:00",
-      "Хронотип": profileData.chronotype || "Morning person",
-      "Рабочие часы": profileData.workHours || "09:00–17:30",
-      "Длительность фокус-сессии (минуты)": String(parseInt(profileData.focus, 10) || 50),
-      "Пиковое время фокуса": profileData.peak || "09:00–11:00",
-      "Предпочтительное время встреч": profileData.meetings || "Prefer afternoons; 15 min buffer between calls",
-      "Предпочтения по перерывам": profileData.break || "10 minutes every 50 minutes",
-      "Личное время": profileData.personal || "Evening",
-      "Когда обычно падает энергия": profileData.energyLossTime || "14:00–15:00"
+      "Energy dip window": profileData.energyLossTime || "14:00–15:00"
     };
   }
 
@@ -4139,9 +4131,9 @@ button:disabled { opacity: 0.55; cursor: wait; }
 
   async function startVoiceRecording() {
     if (voiceRecording) { await stopVoiceRecording({sendToAgent: false}); return; }
-    if (voiceRequestBusy) { showToast('Предыдущая запись ещё распознаётся. Подожди завершения.'); return; }
+    if (voiceRequestBusy) { showToast('Previous recording is still being transcribed. Please wait.'); return; }
     if (!navigator.mediaDevices?.getUserMedia) {
-      showToast('разреши доступ к микрофону в браузере');
+      showToast('Please allow microphone access in your browser');
       return;
     }
     try {
@@ -4152,10 +4144,10 @@ button:disabled { opacity: 0.55; cursor: wait; }
       recorder.addEventListener('dataavailable', e => { if (e.data && e.data.size > 0) state.chunks.push(e.data); });
       recorder.start(250);
       voiceRecording = state;
-      setMicUi(true, 'Запись по-русски… говорите');
-      showToast('Запись началась. Говори по-русски; Enter остановит запись.');
+      setMicUi(true, 'Recording… speak now');
+      showToast('Recording started. Speak your request; Enter stops recording.');
     } catch (err) {
-      showToast('разреши доступ к микрофону: ' + err.message);
+      showToast('Microphone access error: ' + err.message);
     }
   }
 
@@ -4186,7 +4178,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
         if (mag > peak) peak = mag;
       }
       if(peak<0.000002){
-        showToast('почти нулевой сигнал микрофона');
+        showToast('Near-zero audio signal detected');
         setMicUi(false, '');
         return;
       }
@@ -4195,21 +4187,21 @@ button:disabled { opacity: 0.55; cursor: wait; }
       const pcm = resampleTo16k(mono, decoded.sampleRate);
       const wav = encodePcmWav(pcm,16000);
 
-      setMicUi(false, 'Распознаю русскую речь через NVIDIA…');
+      setMicUi(false, 'Transcribing speech via NVIDIA Riva…');
       const resp = await fetch('/api/stt', {
         method: 'POST',
-        headers: {'Content-Type': 'audio/wav', 'X-STT-Language': 'ru-RU'},
+        headers: {'Content-Type': 'audio/wav', 'X-STT-Language': 'en-US'},
         body: wav
       });
       const resData = await resp.json();
       const transcript = String(resData.text || '').trim();
-      if (!transcript) { showToast('Речь не распознана'); return; }
+      if (!transcript) { showToast('No speech detected'); return; }
       $('agentInput').value = transcript;
       if (sendToAgent) {
         await sendAgentMessage(transcript);
       }
     } catch (err) {
-      showToast('Ошибка STT: ' + err.message);
+      showToast('STT error: ' + err.message);
     } finally {
       setMicUi(false, '');
     }
@@ -4251,7 +4243,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
       const data = await api('/api/agent', {
         method: 'POST',
         body: JSON.stringify({
-          message: "Оптимизируй расписание на этот день с учётом моих биоритмов (About you). Найди лучшие окна для глубокого фокуса и добавь необходимые перерывы.",
+          message: "Optimize schedule for today based on my bio-rhythms (About You profile). Identify optimal deep work windows and insert necessary buffer breaks.",
           selected_date: selectedDate,
           history: conversationHistory.slice(-4),
           profile_preferences: getAgentProfilePayload()
@@ -4347,7 +4339,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
   // Insights buttons
     $('discussWithAiBtn')?.addEventListener('click', () => {
     showView('chat');
-    sendAgentMessage('Проанализируй мои биоритмы и расписание на эту неделю. Посоветуй, как оптимизировать нагрузку с учётом моих параметров в About you.');
+    sendAgentMessage('Analyze my bio-rhythms and this week schedule. Advise how to optimize workload according to my About You parameters.');
   });
   $('confirmRhythmBtn')?.addEventListener('click', () => showView('profile'));
   $('insightsPeriodBtn')?.addEventListener('click', () => {

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "user_id": "user_default",
+  "name": "Default User",
+  "timezone": "UTC",
+  "work_hours": {
+    "start": "08:30",
+    "end": "18:30"
+  },
+  "buffer_rules": {
+    "min_buffer_minutes_between_meetings": 15,
+    "min_buffer_minutes_after_external": 20
+  },
+  "focus_time": {
+    "preferred_start": "09:00",
+    "preferred_end": "12:00",
+    "min_continuous_minutes": 60,
+    "target_daily_focus_hours": 3.0
+  },
+  "lunch_window": {
+    "start": "12:30",
+    "end": "13:45",
+    "target_duration_minutes": 45,
+    "strict": true
+  },
+  "protected_event_types": [
+    "medical",
+    "doctor",
+    "dentist",
+    "flight",
+    "train",
+    "personal_care",
+    "external_client_contract"
+  ],
+  "energy_curve": {
+    "09:00-12:00": "high_focus",
+    "12:00-14:00": "lunch_rest",
+    "14:00-16:30": "execution_meetings",
+    "16:30-18:30": "low_effort_admin"
+  },
+  "conflict_policy": {
+    "auto_shift_flexible": true,
+    "preserve_pinned": true,
+    "never_overlap_medical": true
+  }
+}
+

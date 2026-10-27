@@ -1,0 +1,5 @@
+# TimePilot AI Dependencies
+# Core multi-agent orchestrator, Zetaris USL semantic layer, and Meterless engines run natively on Python 3.10+
+# Hosted NVIDIA Riva / Parakeet ASR client (runs cloud inference):
+nvidia-riva-client>=2.27.0
+

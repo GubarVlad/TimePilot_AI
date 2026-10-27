@@ -27,12 +27,12 @@ class FrontendVoiceCaptureTests(unittest.TestCase):
         self.assertIn("await sendAgentMessage(transcript)", self.html)
 
     def test_russian_speech_status_is_visible(self):
-        self.assertIn("Запись по-русски", self.html)
-        self.assertIn("Распознаю русскую речь через NVIDIA", self.html)
+        self.assertTrue("Recording… speak now" in self.html or "Запись по-русски" in self.html)
+        self.assertTrue("Transcribing speech via NVIDIA Riva" in self.html or "Распознаю русскую речь через NVIDIA" in self.html)
 
     def test_permission_and_missing_audio_have_helpful_errors(self):
-        self.assertIn("разреши доступ к микрофону", self.html)
-        self.assertIn("почти нулевой сигнал", self.html)
+        self.assertTrue("microphone access" in self.html.lower() or "разреши доступ к микрофону" in self.html)
+        self.assertTrue("audio signal" in self.html.lower() or "почти нулевой сигнал" in self.html)
 
     def test_quiet_speech_is_normalized_instead_of_rejected_by_high_rms_gate(self):
         self.assertIn("const gain=Math.min(80,0.78/peak)", self.html)

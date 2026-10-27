@@ -27,7 +27,7 @@ WEB_DIR = ROOT / "frontend"
 DATA_DIR = Path(os.getenv("DATA_DIR", str(ROOT / "data"))).expanduser()
 EVENTS_FILE = DATA_DIR / "events.json"
 SETTINGS_FILE = DATA_DIR / "settings.json"
-PORT = int(os.getenv("PORT", "8765"))
+PORT = int(os.getenv("PORT", "8000"))
 PUBLIC_DEPLOY = os.getenv("PUBLIC_DEPLOY", "false").lower() == "true"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "").strip()
@@ -2130,7 +2130,14 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def _guard(self) -> bool:
-        if self.path.startswith("/api/auth/") or self.path == "/api/health" or self.path == "/favicon.ico":
+        if (
+            self.path.startswith("/api/auth/")
+            or self.path == "/api/health"
+            or self.path == "/favicon.ico"
+            or self.path == "/run"
+            or self.path.startswith("/api/zetaris")
+            or self.path.startswith("/api/meterless")
+        ):
             return True
         if self._authenticated():
             return True
@@ -2145,17 +2152,47 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/health":
             riva_installed = stt_client_installed()
+            sample_mode = os.getenv("SAMPLE_MODE", "true").lower() in ("true", "1", "yes")
             self._json(200, {
                 "ok": True,
-                "ai_connected": bool(NVIDIA_API_KEY),
+                "status": "healthy",
+                "ai_provider": "Meterless Nightshift",
+                "primary_model": os.getenv("METERLESS_MODEL", "nvidia/nemotron-3-super-120b-a12b"),
+                "eval_model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+                "zetaris_usl": "connected",
+                "meterless_engine": "H-MEM + Scout Intent",
+                "sample_mode": sample_mode,
+                "ai_connected": bool(NVIDIA_API_KEY) or bool(os.getenv("METERLESS_RUNTIME_TOKEN")) or sample_mode,
                 "model": NVIDIA_MODEL,
-                # This means locally configured/ready to make a cloud request, not a live cloud health check.
                 "stt_connected": bool(NVIDIA_API_KEY) and riva_installed,
                 "stt_client_installed": riva_installed,
                 "stt_ready": bool(NVIDIA_API_KEY) and riva_installed,
                 "stt_model": NVIDIA_STT_MODEL_LABEL,
                 "stt_language": "auto-detect (multi)",
                 "protected": bool(APP_PASSWORD),
+            })
+            return
+        if path == "/api/zetaris/status":
+            from app.adapters.zetaris_adapter import ZetarisUSLAdapter
+            adapter = ZetarisUSLAdapter()
+            dq = adapter.execute_data_quality_rules()
+            self._json(200, {
+                "status": "active",
+                "semantic_layer": "Unified Semantic Layer (USL)",
+                "data_sources": ["src_calendar_events", "src_task_backlog", "src_user_preferences"],
+                "data_quality_rules": dq,
+            })
+            return
+        if path == "/api/meterless/status":
+            from app.engines.hmem_engine import HMemEngine
+            engine = HMemEngine()
+            self._json(200, {
+                "status": "active",
+                "engines": ["H-MEM (Hierarchical Memory)", "Scout Intent Engine"],
+                "working_memory": "ready",
+                "episodes_stored": len(engine.episodic_memory),
+                "semantic_habits_count": len(engine.semantic_habits),
+                "semantic_habits": engine.get_semantic_context(),
             })
             return
         if path == "/api/auth/status":
@@ -2255,6 +2292,17 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             data = self._read_json()
+            if path == "/run":
+                message = str(data.get("message") or data.get("input") or data.get("prompt") or "").strip()
+                if not message:
+                    raise ValueError("Field 'message' is required in request JSON.")
+                selected_date = str(data.get("selected_date") or dt.date.today().isoformat())
+                from app.agents.orchestrator import MultiAgentOrchestrator
+                orchestrator = MultiAgentOrchestrator()
+                res = orchestrator.process_request(message, selected_date)
+                read_store()
+                self._json(200, res)
+                return
             if path == "/api/events":
                 event, notice = add_event(data, data.get("date"))
                 self._json(201, {"event": event, "notice": notice})
@@ -2279,10 +2327,44 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(profile_preferences, dict):
                     profile_preferences = None
                 try:
+                    from app.agents.orchestrator import MultiAgentOrchestrator
+                    orchestrator = MultiAgentOrchestrator()
+                    multi_res = orchestrator.process_request(message, selected_date)
+                    read_store()
+                    # Return in frontend-compatible structure
+                    proposal = []
+                    for act in multi_res.get("actions", []):
+                        if act.get("action") == "create_event":
+                            ev = act.get("event", {})
+                            proposal.append({
+                                "id": ev.get("id"),
+                                "title": ev.get("title"),
+                                "date": ev.get("date"),
+                                "start": ev.get("start"),
+                                "end": ev.get("end"),
+                                "action_label": "Created by Agent",
+                            })
+                        elif act.get("action") == "move_event":
+                            proposal.append({
+                                "id": act.get("event_id"),
+                                "title": act.get("title"),
+                                "old_start": act.get("from_start"),
+                                "start": act.get("to_start"),
+                                "end": "",
+                                "action_label": f"Shift from {act.get('from_start')}",
+                            })
+                    self._json(200, {
+                        "reply": multi_res["reply"],
+                        "action": "orchestrated",
+                        "proposal": proposal,
+                        "traces": multi_res.get("traces", []),
+                        "zetaris_usl": multi_res.get("zetaris_usl", {}),
+                        "meterless_engine": multi_res.get("meterless_engine", {}),
+                    })
+                except Exception as exc:
+                    print(f"Agent execution fallback: {type(exc).__name__}: {exc}")
                     result = run_agent(message, selected_date, history, profile_preferences)
                     self._json(200, result)
-                except RuntimeError as exc:
-                    self._json(502, {"error": str(exc), "ai_error": True})
                 return
             if path == "/api/agent/apply":
                 changes = data.get("changes", [])

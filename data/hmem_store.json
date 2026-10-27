@@ -1,0 +1,720 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-27T09:19:56.514944+00:00",
+  "episodic_memory": [
+    {
+      "episode_id": "ep_3_1793089581",
+      "timestamp": "2026-10-27T08:26:21.727446+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_4_1793089590",
+      "timestamp": "2026-10-27T08:26:30.459844+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Найди свободное окно на полтора часа для стратегического планирования, не задевая визит к врачу' at 17:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 17:00-18:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_5_1793089722",
+      "timestamp": "2026-10-27T08:28:42.293690+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно добавь аудит утечки токенов безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_6_1793089722",
+      "timestamp": "2026-10-27T08:28:42.295995+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_7_1793089722",
+      "timestamp": "2026-10-27T08:28:42.298076+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Найди свободное окно на полтора часа для стратегического планирования, не задевая визит к врачу' at 17:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 17:00-18:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_8_1793089722",
+      "timestamp": "2026-10-27T08:28:42.305556+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_9_1793089945",
+      "timestamp": "2026-10-27T08:32:25.099884+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_10_1793089946",
+      "timestamp": "2026-10-27T08:32:26.231797+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно добавь аудит утечки токенов безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_11_1793089946",
+      "timestamp": "2026-10-27T08:32:26.238313+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_12_1793089946",
+      "timestamp": "2026-10-27T08:32:26.242373+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Найди свободное окно на полтора часа для стратегического планирования, не задевая визит к врачу' at 17:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 17:00-18:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_13_1793089946",
+      "timestamp": "2026-10-27T08:32:26.245480+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_14_1793089978",
+      "timestamp": "2026-10-27T08:32:58.657406+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_15_1793089979",
+      "timestamp": "2026-10-27T08:32:59.780989+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно добавь аудит утечки токенов безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_16_1793089979",
+      "timestamp": "2026-10-27T08:32:59.786368+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Оптимизируй мой график на' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_17_1793089979",
+      "timestamp": "2026-10-27T08:32:59.790449+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Найди свободное окно на полтора часа для стратегического планирования, не задевая визит к врачу' at 17:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 17:00-18:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_18_1793089979",
+      "timestamp": "2026-10-27T08:32:59.794300+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_19_1793091071",
+      "timestamp": "2026-10-27T08:51:11.166005+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_20_1793091082",
+      "timestamp": "2026-10-27T08:51:22.035335+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_21_1793091082",
+      "timestamp": "2026-10-27T08:51:22.098777+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Find a 90-minute free window for strategic roadmap planning without touching the doctor appointment' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_22_1793091148",
+      "timestamp": "2026-10-27T08:52:28.354249+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_23_1793091149",
+      "timestamp": "2026-10-27T08:52:29.519065+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_24_1793091149",
+      "timestamp": "2026-10-27T08:52:29.524863+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_25_1793091149",
+      "timestamp": "2026-10-27T08:52:29.528071+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Find a 90-minute free window for strategic roadmap planning without touching the doctor appointment' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_26_1793091149",
+      "timestamp": "2026-10-27T08:52:29.532087+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_27_1793091259",
+      "timestamp": "2026-10-27T08:54:19.502769+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_28_1793091260",
+      "timestamp": "2026-10-27T08:54:20.624185+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_29_1793091260",
+      "timestamp": "2026-10-27T08:54:20.627324+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_30_1793091260",
+      "timestamp": "2026-10-27T08:54:20.630019+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Find a 90-minute free window for strategic roadmap planning without touching the doctor appointment' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_31_1793091260",
+      "timestamp": "2026-10-27T08:54:20.632551+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_32_1793091348",
+      "timestamp": "2026-10-27T08:55:48.327690+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_33_1793091349",
+      "timestamp": "2026-10-27T08:55:49.449274+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_34_1793091349",
+      "timestamp": "2026-10-27T08:55:49.454487+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_35_1793091349",
+      "timestamp": "2026-10-27T08:55:49.457615+00:00",
+      "intent_type": "QUERY_FREE_TIME",
+      "context_summary": "Scheduled 'Find a 90-minute free window for strategic roadmap planning without touching the doctor appointment' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_36_1793091349",
+      "timestamp": "2026-10-27T08:55:49.460537+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_37_1793091381",
+      "timestamp": "2026-10-27T08:56:21.345303+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_38_1793091552",
+      "timestamp": "2026-10-27T08:59:12.657597+00:00",
+      "intent_type": "OPTIMIZE_DAY",
+      "context_summary": "Scheduled 'Optimize my schedule for' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_39_1793091573",
+      "timestamp": "2026-10-27T08:59:33.350236+00:00",
+      "intent_type": "GENERAL_CONVERSATION",
+      "context_summary": "Scheduled 'Find a 2-hour deep focus slot' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_40_1793091580",
+      "timestamp": "2026-10-27T08:59:40.744417+00:00",
+      "intent_type": "GENERAL_CONVERSATION",
+      "context_summary": "Scheduled 'What do you know about my rhythm?' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_41_1793091959",
+      "timestamp": "2026-10-27T09:05:59.508572+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_42_1793092060",
+      "timestamp": "2026-10-27T09:07:40.231646+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_43_1793092061",
+      "timestamp": "2026-10-27T09:07:41.357166+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_44_1793092061",
+      "timestamp": "2026-10-27T09:07:41.361674+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_45_1793092061",
+      "timestamp": "2026-10-27T09:07:41.366563+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_46_1793092291",
+      "timestamp": "2026-10-27T09:11:31.190121+00:00",
+      "intent_type": "OPTIMIZE_DAY",
+      "context_summary": "Scheduled 'Optimize my schedule for' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_47_1793092320",
+      "timestamp": "2026-10-27T09:12:00.262380+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Security audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_48_1793092535",
+      "timestamp": "2026-10-27T09:15:35.089297+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй код-ревью безопасности' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_49_1793092536",
+      "timestamp": "2026-10-27T09:15:36.214265+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Schedule security token leak audit' at 15:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 15:00-15:45",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot",
+        "shift_movable"
+      ]
+    },
+    {
+      "episode_id": "ep_50_1793092536",
+      "timestamp": "2026-10-27T09:15:36.219911+00:00",
+      "intent_type": "EXPLAIN_WHY",
+      "context_summary": "Scheduled 'Optimize my schedule' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "hmem_habit_aligned_free_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_51_1793092536",
+      "timestamp": "2026-10-27T09:15:36.226957+00:00",
+      "intent_type": "SCHEDULE_NEW_TASK",
+      "context_summary": "Scheduled 'Срочно запланируй созвон с ментором' at 12:00 on 2026-10-27",
+      "decision_taken": "Assigned slot 12:00-12:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "urgent",
+        "critic_adjusted_slot"
+      ]
+    },
+    {
+      "episode_id": "ep_51_1793092796",
+      "timestamp": "2026-10-27T09:19:56.514927+00:00",
+      "intent_type": "OPTIMIZE_DAY",
+      "context_summary": "Scheduled 'Optimize my schedule for' at 08:30 on 2026-10-27",
+      "decision_taken": "Assigned slot 08:30-09:30",
+      "user_feedback": "accepted",
+      "tags": [
+        "scheduling",
+        "medium",
+        "hmem_habit_aligned_free_slot"
+      ]
+    }
+  ],
+  "semantic_habits": {
+    "morning_focus_bias": {
+      "habit_key": "morning_focus_bias",
+      "description": "Prefers deep work and strategic planning before 12:00",
+      "confidence": 0.88,
+      "evidence_count": 12,
+      "preferred_value": {
+        "window": "09:00-12:00",
+        "weight": 1.5
+      }
+    },
+    "meeting_buffer_affinity": {
+      "habit_key": "meeting_buffer_affinity",
+      "description": "Enforces 15-minute breathing room after client or team meetings",
+      "confidence": 0.92,
+      "evidence_count": 19,
+      "preferred_value": {
+        "buffer_minutes": 15,
+        "strict": true
+      }
+    },
+    "protected_lunch_window": {
+      "habit_key": "protected_lunch_window",
+      "description": "Disallows scheduling tasks during lunch hour (12:30-13:30)",
+      "confidence": 0.95,
+      "evidence_count": 24,
+      "preferred_value": {
+        "start": "12:30",
+        "end": "13:30"
+      }
+    },
+    "flexible_task_shift_preference": {
+      "habit_key": "flexible_task_shift_preference",
+      "description": "When high priority items arrive, prefer shifting movable tasks over declining",
+      "confidence": 0.99,
+      "evidence_count": 33,
+      "preferred_value": {
+        "shift_strategy": "forward_slot"
+      }
+    }
+  }
+}

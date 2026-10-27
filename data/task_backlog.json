@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "task_id": "TASK-101",
+      "title": "Fix critical auth token leakage vulnerability",
+      "estimated_minutes": 45,
+      "priority": "urgent",
+      "due_date": "2026-10-27",
+      "category": "security",
+      "status": "todo",
+      "assignee": "user_default",
+      "context_tags": ["backend", "hotfix", "security"],
+      "description": "Ensure no runtime tokens or API secrets are written to logs or exposed via client headers."
+    },
+    {
+      "task_id": "TASK-102",
+      "title": "Prepare Q4 Product Roadmap & Metrics",
+      "estimated_minutes": 90,
+      "priority": "high",
+      "due_date": "2026-10-27",
+      "category": "deep_work",
+      "status": "todo",
+      "assignee": "user_default",
+      "context_tags": ["strategy", "planning", "q4"],
+      "description": "Synthesize monthly user retention metrics and quarterly feature delivery roadmap for executive sync."
+    },
+    {
+      "task_id": "TASK-103",
+      "title": "Client Feedback & Contract Review",
+      "estimated_minutes": 60,
+      "priority": "high",
+      "due_date": "2026-10-28",
+      "category": "review",
+      "status": "todo",
+      "assignee": "user_default",
+      "context_tags": ["client", "legal", "external"],
+      "description": "Review SLA terms and data privacy clauses before 5 PM tomorrow."
+    },
+    {
+      "task_id": "TASK-104",
+      "title": "Refactor Zetaris USL Data Connector",
+      "estimated_minutes": 60,
+      "priority": "medium",
+      "due_date": "2026-10-29",
+      "category": "engineering",
+      "status": "todo",
+      "assignee": "user_default",
+      "context_tags": ["data", "zetaris", "usl"],
+      "description": "Add streaming cursor and schema migration checks to unified semantic layer."
+    },
+    {
+      "task_id": "TASK-105",
+      "title": "Weekly Team Retrospective Prep",
+      "estimated_minutes": 30,
+      "priority": "low",
+      "due_date": "2026-10-30",
+      "category": "admin",
+      "status": "todo",
+      "assignee": "user_default",
+      "context_tags": ["team", "retro", "notes"],
+      "description": "Gather action points from sprint backlog and team feedback board."
+    }
+  ]
+}
+

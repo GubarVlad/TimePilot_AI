@@ -1,9 +1,10 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-echo ==============================================
-echo   TimePilot AI - Calendar + AI + Voice Input
-echo ==============================================
+echo ===================================================
+echo   TimePilot AI - Autonomous Cognitive Calendar
+echo   Zetaris USL + Meterless H-MEM + NVIDIA Nemotron
+echo ===================================================
 echo.
 set "PYTHON_CMD="
 where py >nul 2>nul
@@ -21,23 +22,15 @@ if not defined PYTHON_CMD (
   echo Install Python from https://www.python.org/downloads/ and enable Add Python to PATH.
   goto :failed
 )
-%PYTHON_CMD% -c "import riva.client" >nul 2>nul
-if errorlevel 1 (
-  echo Installing NVIDIA speech-to-text client for first use...
-  %PYTHON_CMD% -m pip install -r backend\requirements.txt
-  if errorlevel 1 (
-    echo.
-    echo WARNING: STT setup failed. Calendar and text agent will still start.
-    echo To enable voice later, run: %PYTHON_CMD% -m pip install -r backend\requirements.txt
-  )
-)
+
+echo Starting TimePilot AI on http://localhost:8000...
 echo.
-%PYTHON_CMD% -m backend.app
+%PYTHON_CMD% run.py --serve --port 8000
 if errorlevel 1 goto :failed
 goto :end
 :failed
 echo.
-echo TimePilot did not start. Read the error above.
+echo TimePilot AI did not start. Read the error above.
 pause
 :end
 endlocal
