@@ -3,39 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TimePilot AI — Autonomous Cognitive Calendar | Apple Keynote Edition</title>
+  <title>TimePilot AI — Presentation (Apple Keynote Style)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f5f5f7;
-      --bg-alt: #ffffff;
-      --surface: #ffffff;
-      --surface-subtle: #fbfbfd;
+      --card-bg: #ffffff;
       --text: #1d1d1f;
-      --text-secondary: #86868b;
-      --text-tertiary: #a1a1a6;
+      --text-muted: #86868b;
       --line: #e5e5ea;
-      --line-subtle: #f2f2f7;
-      --apple-blue: #0071e3;
-      --apple-blue-hover: #0077ed;
-      --apple-blue-soft: #e8f2fc;
-      --apple-indigo: #5e5ce6;
-      --apple-purple: #af52de;
-      --apple-green: #34c759;
-      --apple-orange: #ff9500;
-      --apple-red: #ff3b30;
-      --apple-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-      --apple-window-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-      --apple-active-shadow: 0 8px 32px rgba(0, 113, 227, 0.16);
-      --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
-      --radius-xl: 32px;
-      --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
-      --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
-      --font-mono: "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --blue: #0071e3;
+      --blue-soft: #e8f2fc;
+      --purple: #5e5ce6;
+      --purple-soft: #f3f2fd;
+      --green: #34c759;
+      --green-soft: #eafaf1;
+      --orange: #ff9500;
+      --orange-soft: #fff6eb;
+      --red: #ff3b30;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+      --font-mono: "JetBrains Mono", Menlo, monospace;
     }
 
     * {
@@ -43,1293 +33,837 @@
       margin: 0;
       padding: 0;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
-    html, body {
+    body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: var(--font-body);
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-      height: 100%;
-    }
-
-    /* Container for seamless full-page presentation */
-    .deck-container {
-      width: 100%;
+      font-family: var(--font);
       height: 100vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      position: relative;
-    }
-
-    /* Individual full-screen slide sections */
-    section.slide-section {
       width: 100vw;
-      min-height: 100vh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 80px 48px 48px;
-      position: relative;
-      background: var(--bg);
-      overflow: hidden;
+      justify-content: center;
+      user-select: none;
     }
 
-    section.slide-section.alt-bg {
-      background: var(--bg-alt);
-    }
-
-    /* Floating Apple Navigation Dock */
-    .apple-dock {
+    /* Top minimal navigation bar */
+    .top-bar {
       position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 9999px;
-      padding: 6px 14px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 100;
     }
 
-    .dock-brand {
+    .brand-title {
+      font-weight: 700;
+      font-size: 15px;
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      padding-right: 8px;
-      border-right: 1px solid var(--line);
     }
 
-    .dock-icon {
-      width: 22px;
-      height: 22px;
-      background: linear-gradient(135deg, #0071e3, #5e5ce6);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
+    .brand-badge {
+      background: var(--blue-soft);
+      color: var(--blue);
       font-size: 11px;
-      font-weight: bold;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 9999px;
     }
 
-    .dock-links {
+    .nav-controls {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 12px;
     }
 
-    .dock-link {
+    .btn-keynote {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 9999px;
       font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 9999px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       transition: all 0.2s ease;
-      cursor: pointer;
     }
 
-    .dock-link:hover, .dock-link.active {
-      color: var(--text);
-      background: rgba(0, 0, 0, 0.05);
+    .btn-keynote:hover {
+      background: #f2f2f7;
+      border-color: #d1d1d6;
     }
 
-    .dock-link.active {
+    .slide-number {
+      font-size: 12px;
       font-weight: 600;
-      color: var(--apple-blue);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      min-width: 50px;
+      text-align: center;
     }
 
-    .dock-badge {
-      background: var(--apple-blue-soft);
-      color: var(--apple-blue);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 9999px;
-    }
-
-    .dock-fullscreen-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 50%;
+    /* 16:9 Apple Slide Canvas */
+    .deck-viewport {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
-    }
-    .dock-fullscreen-btn:hover {
-      background: rgba(0,0,0,0.06);
-      color: var(--text);
+      padding: 68px 24px 20px;
     }
 
-    /* Content Wrapper */
-    .content-box {
+    .slide-canvas {
       width: 100%;
-      max-width: 1240px;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      max-height: calc(100vh - 88px);
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      position: relative;
-      z-index: 2;
+    }
+
+    /* Individual Slide */
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
 
     /* Typography */
-    .eyebrow {
-      font-size: 13px;
+    .tag {
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--apple-blue);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .eyebrow-pill {
-      background: var(--apple-blue-soft);
-      color: var(--apple-blue);
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 11px;
       letter-spacing: 0.08em;
+      color: var(--blue);
+      margin-bottom: 8px;
     }
 
-    .headline-hero {
-      font-family: var(--font-display);
-      font-size: 56px;
+    .title {
+      font-size: 38px;
       font-weight: 800;
-      letter-spacing: -0.035em;
-      line-height: 1.05;
-      text-align: center;
-      color: var(--text);
-      margin-bottom: 16px;
-      background: linear-gradient(180deg, #1d1d1f 0%, #48484a 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .headline {
-      font-family: var(--font-display);
-      font-size: 42px;
-      font-weight: 700;
       letter-spacing: -0.03em;
       line-height: 1.15;
-      text-align: center;
       color: var(--text);
-      margin-bottom: 14px;
+      margin-bottom: 8px;
     }
 
-    .subhead {
-      font-size: 19px;
-      font-weight: 400;
-      line-height: 1.5;
-      text-align: center;
-      color: var(--text-secondary);
-      max-width: 820px;
-      margin-bottom: 36px;
+    .subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 28px;
+      max-width: 920px;
     }
 
-    /* Cards & Grids */
+    /* Grid Layouts */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
-      width: 100%;
+      gap: 24px;
+      flex: 1;
+      align-items: stretch;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      width: 100%;
+      gap: 20px;
+      flex: 1;
+      align-items: stretch;
     }
 
-    .apple-card {
-      background: var(--surface);
-      border-radius: var(--radius-lg);
-      padding: 32px;
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    /* Cards */
+    .card {
+      background: #fbfbfd;
       border: 1px solid var(--line);
-      box-shadow: var(--apple-card-shadow);
+      border-radius: 18px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      position: relative;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      justify-content: flex-start;
+      gap: 10px;
     }
 
-    .apple-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.07);
+    .card.blue {
+      background: var(--blue-soft);
+      border-color: #c7e0f9;
     }
 
-    .apple-card.highlight {
-      border: 1px solid rgba(0, 113, 227, 0.35);
-      background: linear-gradient(180deg, #ffffff 0%, var(--apple-blue-soft) 180%);
+    .card.purple {
+      background: var(--purple-soft);
+      border-color: #ddd9fa;
     }
 
-    .card-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 11px;
+    .card-icon {
+      font-size: 26px;
+      margin-bottom: 4px;
+    }
+
+    .card-heading {
+      font-size: 17px;
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 14px;
-      width: fit-content;
-    }
-    .badge-blue { background: #e0f2fe; color: #0284c7; }
-    .badge-purple { background: #f3e8ff; color: #9333ea; }
-    .badge-green { background: #dcfce7; color: #16a34a; }
-    .badge-orange { background: #ffedd5; color: #ea580c; }
-
-    .card-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
       color: var(--text);
-      margin-bottom: 8px;
     }
 
-    .card-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.55;
+    .card-body {
+      font-size: 13.5px;
+      color: #48484a;
+      line-height: 1.5;
     }
 
     .card-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 8px;
+      margin-top: 6px;
     }
 
     .card-list li {
-      font-size: 13.5px;
+      font-size: 13px;
       color: #3a3a3c;
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     .card-list li::before {
-      content: "✓";
-      color: var(--apple-blue);
+      content: "•";
+      color: var(--blue);
       font-weight: bold;
+      font-size: 16px;
+      line-height: 1;
     }
 
-    /* ================================================================= */
-    /* INTERACTIVE APPLE-STYLE MACOS WINDOW & CALENDAR INTERFACE SHOWCASE */
-    /* ================================================================= */
-    .macos-window {
-      width: 100%;
-      max-width: 1160px;
-      background: #ffffff;
-      border-radius: 20px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      box-shadow: var(--apple-window-shadow);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      margin-top: 8px;
-    }
-
-    .macos-titlebar {
-      height: 48px;
-      background: #fafafa;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-    }
-
-    .macos-traffic-lights {
-      display: flex;
-      gap: 8px;
-    }
-
-    .traffic-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-    .traffic-close { background: #ff5f56; border: 1px solid #e0443e; }
-    .traffic-min { background: #ffbd2e; border: 1px solid #dea123; }
-    .traffic-max { background: #27c93f; border: 1px solid #1aab29; }
-
-    .macos-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .macos-status {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--apple-green);
-      background: #eafaf1;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .macos-status::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      background: var(--apple-green);
-      border-radius: 50%;
-    }
-
-    /* Live Demo Workspace Layout */
-    .demo-workspace {
+    /* Clean UI Preview (Slide 4) */
+    .ui-showcase {
       display: grid;
-      grid-template-columns: 260px 1fr 340px;
-      min-height: 460px;
-      background: #ffffff;
-    }
-
-    /* Left Sidebar: Controls & Live Scenarios */
-    .demo-sidebar {
+      grid-template-columns: 1.6fr 1.1fr;
+      gap: 20px;
+      flex: 1;
       background: #fbfbfd;
-      border-right: 1px solid var(--line);
+      border: 1px solid var(--line);
+      border-radius: 18px;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+      overflow: hidden;
     }
 
-    .sidebar-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-tertiary);
-    }
-
-    .scenario-btn {
+    .calendar-mock {
       background: #ffffff;
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      text-align: left;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
+      border-radius: 14px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-
-    .scenario-btn:hover {
-      border-color: var(--apple-blue);
-      background: var(--apple-blue-soft);
-    }
-
-    .scenario-btn.active {
-      border-color: var(--apple-blue);
-      background: var(--apple-blue-soft);
-      color: var(--apple-blue);
-    }
-
-    .scenario-btn-title {
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .scenario-btn-desc {
-      font-size: 11px;
-      color: var(--text-secondary);
-      line-height: 1.35;
-    }
-
-    .trigger-demo-btn {
-      margin-top: auto;
-      background: var(--apple-blue);
-      color: #ffffff;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
-      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
-    .trigger-demo-btn:hover {
-      background: var(--apple-blue-hover);
-      transform: translateY(-1px);
-    }
-
-    /* Center: Calendar Schedule Grid */
-    .demo-calendar {
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      background: #ffffff;
-      overflow-y: auto;
-    }
-
-    .cal-header {
+    .mock-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--line);
-    }
-
-    .cal-date-title {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 700;
-      color: var(--text);
     }
 
-    .cal-badges {
-      display: flex;
-      gap: 6px;
-    }
-
-    .cal-pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      background: #f2f2f7;
-      color: var(--text-secondary);
-    }
-
-    /* Timeline Slot Grid */
-    .timeline-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .time-slot {
+    .mock-row {
       display: grid;
-      grid-template-columns: 55px 1fr;
+      grid-template-columns: 48px 1fr;
       align-items: center;
       gap: 12px;
-      position: relative;
+      padding: 6px 0;
     }
 
-    .slot-time {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      font-family: var(--font-mono);
-    }
-
-    .slot-card {
-      background: #fbfbfd;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 12.5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .slot-card.pinned {
-      background: #f0f7ff;
-      border-color: #b9e0ff;
-      border-left: 4px solid var(--apple-blue);
-    }
-
-    .slot-card.movable {
-      background: #faf5ff;
-      border-color: #e9d5ff;
-      border-left: 4px solid var(--apple-purple);
-    }
-
-    .slot-card.new-urgent {
-      background: #fff7ed;
-      border-color: #fed7aa;
-      border-left: 4px solid var(--apple-orange);
-      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.15);
-      animation: slotAppear 0.5s ease-out;
-    }
-
-    .slot-card.shifted {
-      border-color: var(--apple-purple);
-      background: #fbf5ff;
-      transform: translateX(4px);
-    }
-
-    @keyframes slotAppear {
-      from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .event-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .event-title {
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .event-meta {
+    .mock-time {
       font-size: 11px;
-      color: var(--text-secondary);
+      font-weight: 600;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
     }
 
-    .event-tag {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .tag-pinned { background: #dbeafe; color: #1d4ed8; }
-    .tag-movable { background: #f3e8ff; color: #7e22ce; }
-    .tag-urgent { background: #ffedd5; color: #c2410c; }
-
-    /* Right Sidebar: Explain Why & Live Traces */
-    .demo-details {
-      background: #fbfbfd;
-      border-left: 1px solid var(--line);
-      padding: 20px;
+    .mock-event {
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
       display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .explain-why-box {
+    .mock-event.pinned {
+      background: #eff6ff;
+      border-left: 3px solid var(--blue);
+      color: #1e3a8a;
+    }
+
+    .mock-event.urgent {
+      background: #fff7ed;
+      border-left: 3px solid var(--orange);
+      color: #9a3412;
+      font-weight: 600;
+    }
+
+    .mock-event.shifted {
+      background: #faf5ff;
+      border-left: 3px solid var(--purple);
+      color: #6b21a8;
+    }
+
+    .explain-mock {
       background: #ffffff;
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      padding: 14px;
+      border-radius: 14px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      gap: 12px;
     }
 
-    .explain-title {
-      font-size: 12px;
+    .explain-tag {
+      font-size: 11px;
       font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      color: var(--blue);
+      text-transform: uppercase;
     }
 
-    .explain-item {
-      font-size: 11.5px;
-      line-height: 1.45;
-      color: #4b5563;
-      padding-left: 10px;
-      border-left: 2px solid var(--apple-blue);
-    }
-
-    .explain-item strong {
-      color: var(--text);
-    }
-
-    /* Traces Terminal Snippet */
-    .traces-mini {
-      background: #1c1c1e;
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: #93c5fd;
+    .explain-text {
+      font-size: 12px;
+      color: #3a3a3c;
       line-height: 1.5;
-      max-height: 140px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      background: #fbfbfd;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 3px solid var(--blue);
     }
 
-    .trace-line {
-      display: block;
-      word-break: break-all;
-    }
-    .trace-success { color: #86efac; }
-    .trace-warn { color: #fde047; }
-    .trace-model { color: #c4b5fd; font-weight: 600; }
-
-    /* ================================================================= */
-    /* ARCHITECTURE FLOW (CLEAN LIGHT DESIGN)                           */
-    /* ================================================================= */
-    .flow-container {
+    /* Flow Boxes (Slide 5) */
+    .flow-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: 100%;
-      background: #ffffff;
-      border-radius: var(--radius-lg);
+      gap: 12px;
+      background: #fbfbfd;
       border: 1px solid var(--line);
-      padding: 36px 28px;
-      box-shadow: var(--apple-card-shadow);
-      margin-top: 14px;
-      position: relative;
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 16px;
     }
 
-    .agent-node {
+    .flow-step {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 8px;
-      width: 200px;
-      position: relative;
+      gap: 6px;
+      flex: 1;
     }
 
-    .node-icon-box {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      background: var(--surface-subtle);
+    .flow-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #ffffff;
       border: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      transition: all 0.2s;
+      font-size: 18px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
 
-    .agent-node:hover .node-icon-box {
-      transform: scale(1.06);
-      border-color: var(--apple-blue);
-      box-shadow: var(--apple-active-shadow);
-    }
-
-    .node-name {
-      font-family: var(--font-display);
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .node-role {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.35;
-    }
-
-    .node-model-tag {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--apple-indigo);
-      background: #f5f3ff;
-      padding: 3px 8px;
-      border-radius: 9999px;
-    }
-
-    .flow-arrow {
-      font-size: 20px;
-      color: var(--text-tertiary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .flow-arrow span {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--apple-blue);
-    }
-
-    /* Comparison Table in Apple Style */
-    .apple-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      background: #ffffff;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--line);
-      box-shadow: var(--apple-card-shadow);
-      overflow: hidden;
-      margin-top: 14px;
-    }
-
-    .apple-table th {
-      background: #fbfbfd;
-      padding: 16px 20px;
+    .flow-name {
       font-size: 13px;
       font-weight: 700;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-    }
-
-    .apple-table td {
-      padding: 16px 20px;
-      font-size: 13.5px;
       color: var(--text);
-      border-bottom: 1px solid var(--line-subtle);
-      line-height: 1.5;
     }
 
-    .apple-table tr:last-child td {
-      border-bottom: none;
+    .flow-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
     }
 
-    /* Key Metric Pills */
-    .metric-row {
+    .flow-divider {
+      color: #c7c7cc;
+      font-size: 18px;
+    }
+
+    /* Key Numbers (Slide 1 & 8) */
+    .metrics-bar {
       display: flex;
-      gap: 20px;
-      justify-content: center;
-      margin-top: 16px;
-      width: 100%;
+      gap: 18px;
+      margin-top: auto;
     }
 
-    .metric-pill {
-      background: #ffffff;
+    .metric-item {
+      background: #fbfbfd;
       border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 16px 28px;
+      border-radius: 14px;
+      padding: 14px 22px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      box-shadow: var(--apple-card-shadow);
-      min-width: 220px;
+      flex: 1;
     }
 
-    .metric-number {
-      font-family: var(--font-display);
-      font-size: 36px;
+    .metric-val {
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--apple-blue);
+      color: var(--blue);
       line-height: 1;
       margin-bottom: 4px;
     }
 
-    .metric-label {
-      font-size: 12.5px;
+    .metric-lbl {
+      font-size: 11.5px;
+      color: var(--text-muted);
       font-weight: 600;
-      color: var(--text-secondary);
-      text-align: center;
+    }
+
+    /* Footer / Keyboard hints */
+    .slide-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 56px;
+      right: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid #f2f2f7;
+      padding-top: 12px;
     }
   </style>
 </head>
 <body>
 
-  <!-- FLOATING APPLE DOCK -->
-  <nav class="apple-dock">
-    <div class="dock-brand">
-      <div class="dock-icon">⚡</div>
-      <span>TimePilot AI</span>
+  <!-- Top Navigation -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span>⚡ TimePilot AI</span>
+      <span class="brand-badge">Keynote Deck</span>
     </div>
-    <div class="dock-links">
-      <a class="dock-link active" onclick="scrollToSlide(0)">Overview</a>
-      <a class="dock-link" onclick="scrollToSlide(1)">Live Interface Demo</a>
-      <a class="dock-link" onclick="scrollToSlide(2)">Reasoning Loop</a>
-      <a class="dock-link" onclick="scrollToSlide(3)">Sponsors</a>
-      <a class="dock-link" onclick="scrollToSlide(4)">Impact</a>
+    <div class="nav-controls">
+      <button class="btn-keynote" id="btnPrev">← Prev</button>
+      <span class="slide-number" id="slideIndex">1 / 8</span>
+      <button class="btn-keynote" id="btnNext">Next →</button>
+      <button class="btn-keynote" id="btnFull" title="Full Screen (F)">⛶ Fullscreen</button>
     </div>
-    <span class="dock-badge">Track 03: Reasoning</span>
-    <button class="dock-fullscreen-btn" id="btnFullscreen" title="Toggle Fullscreen (F)">⛶</button>
-  </nav>
+  </header>
 
-  <!-- MAIN FULL-SCREEN SLIDES CONTAINER -->
-  <div class="deck-container" id="deckContainer">
+  <!-- Deck Viewport -->
+  <main class="deck-viewport">
+    <div class="slide-canvas">
 
-    <!-- ========================================== -->
-    <!-- SLIDE 1: HERO & PURPOSE                    -->
-    <!-- ========================================== -->
-    <section class="slide-section" id="slide-0">
-      <div class="content-box">
-        <div class="eyebrow">
-          <span class="eyebrow-pill">Open Agent Hackathon 2026</span>
-          <span>Track 03: Reasoning Architecture</span>
-        </div>
-        <h1 class="headline-hero">TimePilot AI</h1>
-        <p class="subhead" style="font-size: 24px; font-weight: 500; color: #1d1d1f; max-width: 900px; margin-bottom: 12px;">
-          Autonomous Cognitive Calendar & Scheduling Agent.
-        </p>
-        <p class="subhead" style="margin-bottom: 28px;">
-          <em>Not another chatbot. An agent that does real work.</em> Unifying fragmented intelligence into reliable decisions through iterative critique, cognitive memory, and transparent evidence.
-        </p>
+      <!-- SLIDE 1: Title -->
+      <div class="slide active" id="slide-1">
+        <div class="tag">Open Agent Hackathon 2026 · Track 03: Reasoning Architecture</div>
+        <h1 class="title">TimePilot AI</h1>
+        <p class="subtitle">Autonomous Cognitive Calendar & Scheduling Agent.<br><strong>Not another chatbot. An agent that does real work.</strong></p>
 
-        <div class="metric-row">
-          <div class="metric-pill">
-            <span class="metric-number">2.5 hrs</span>
-            <span class="metric-label">Saved Daily per User</span>
+        <div class="grid-3" style="margin-bottom: 24px;">
+          <div class="card blue">
+            <span class="card-icon">🧠</span>
+            <span class="card-heading">Cognitive Memory</span>
+            <p class="card-body">Learns work habits and remembers past decisions using Meterless H-MEM.</p>
           </div>
-          <div class="metric-pill">
-            <span class="metric-number">100%</span>
-            <span class="metric-label">Double-Booking Elimination</span>
+          <div class="card purple">
+            <span class="card-icon">⚖️</span>
+            <span class="card-heading">Active Critique Loop</span>
+            <p class="card-body">ConflictCritic tests every slot, rejecting collisions and shifting movable tasks.</p>
           </div>
-          <div class="metric-pill">
-            <span class="metric-number">101</span>
-            <span class="metric-label">Automated Tests Passed</span>
-          </div>
-          <div class="metric-pill">
-            <span class="metric-number">0</span>
-            <span class="metric-label">Hallucinations / Hardcoded Data</span>
+          <div class="card">
+            <span class="card-icon">🗄️</span>
+            <span class="card-heading">Unified Data Layer</span>
+            <p class="card-body">Federates calendar, task backlogs, and buffer rules with Zetaris USL.</p>
           </div>
         </div>
 
-        <button class="trigger-demo-btn" style="margin-top: 36px; padding: 14px 32px; font-size: 15px; border-radius: 9999px;" onclick="scrollToSlide(1)">
-          Explore Live Interface Demo ↓
-        </button>
+        <div class="metrics-bar">
+          <div class="metric-item">
+            <span class="metric-val">2.5 hrs</span>
+            <span class="metric-lbl">Saved daily per user</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">100%</span>
+            <span class="metric-lbl">Double-booking elimination</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">101</span>
+            <span class="metric-lbl">Automated tests passed</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val">0</span>
+            <span class="metric-lbl">Hallucinated slots</span>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>Track: Reasoning Architecture</span>
+          <span>Use Left / Right Arrows to navigate</span>
+        </div>
       </div>
-    </section>
 
-    <!-- ========================================== -->
-    <!-- SLIDE 2: INTERACTIVE LIVE INTERFACE DEMO   -->
-    <!-- ========================================== -->
-    <section class="slide-section alt-bg" id="slide-1">
-      <div class="content-box">
-        <div class="eyebrow">
-          <span class="eyebrow-pill">Interactive Product Showcase</span>
-          <span>Authentic UI & Dynamic Conflict Resolution</span>
-        </div>
-        <h2 class="headline" style="margin-bottom: 6px;">Experience Autonomous Scheduling</h2>
-        <p class="subhead" style="margin-bottom: 16px; font-size: 16px;">
-          Click "Run Live Resolution" to watch the 4-agent loop detect collisions, reject unfeasible slots, and shift movable tasks live.
-        </p>
+      <!-- SLIDE 2: The Problem -->
+      <div class="slide" id="slide-2">
+        <div class="tag">01 / The Challenge</div>
+        <h2 class="title">Why Scheduling Is Broken</h2>
+        <p class="subtitle">Professionals lose hours playing "calendar Tetris" across disconnected tools.</p>
 
-        <!-- MacOS Window Wrapper -->
-        <div class="macos-window">
-          <!-- Titlebar -->
-          <div class="macos-titlebar">
-            <div class="macos-traffic-lights">
-              <div class="traffic-dot traffic-close"></div>
-              <div class="traffic-dot traffic-min"></div>
-              <div class="traffic-dot traffic-max"></div>
-            </div>
-            <div class="macos-title">
-              <span>TimePilot AI — Tuesday, Oct 27, 2026</span>
-            </div>
-            <div class="macos-status" id="liveAgentStatus">Agent Ready · Zetaris USL Active</div>
+        <div class="grid-3">
+          <div class="card">
+            <span class="card-icon">📂</span>
+            <span class="card-heading">Disconnected Data</span>
+            <p class="card-body">Urgent bugs wait in Jira or Linear backlogs. They never talk to Google Calendar or user buffer preferences.</p>
           </div>
-
-          <!-- Workspace -->
-          <div class="demo-workspace">
-            
-            <!-- Left Sidebar -->
-            <div class="demo-sidebar">
-              <div class="sidebar-section-title">Live Test Scenarios</div>
-
-              <button class="scenario-btn active" id="btnScen1" onclick="selectScenario(1)">
-                <span class="scenario-btn-title">🚨 Urgent Security Audit</span>
-                <span class="scenario-btn-desc">Urgent audit arriving at 14:00 (collides with Team Sync).</span>
-              </button>
-
-              <button class="scenario-btn" id="btnScen2" onclick="selectScenario(2)">
-                <span class="scenario-btn-title">🔍 Find 90m Focus Slot</span>
-                <span class="scenario-btn-desc">Respects protected medical & 15m meeting buffers.</span>
-              </button>
-
-              <button class="trigger-demo-btn" id="btnRunAction" onclick="executeCurrentScenario()">
-                ▶ Run Live Resolution
-              </button>
-            </div>
-
-            <!-- Center Calendar Schedule -->
-            <div class="demo-calendar">
-              <div class="cal-header">
-                <span class="cal-date-title">Tuesday, October 27, 2026</span>
-                <div class="cal-badges">
-                  <span class="cal-pill">Work Hours: 08:30–18:30</span>
-                  <span class="cal-pill">15m Buffers Protected</span>
-                </div>
-              </div>
-
-              <div class="timeline-grid" id="timelineGrid">
-                
-                <!-- 10:00 - 11:30 -->
-                <div class="time-slot">
-                  <span class="slot-time">10:00</span>
-                  <div class="slot-card pinned">
-                    <div class="event-info">
-                      <span class="event-title">🩺 Dentist Appointment</span>
-                      <span class="event-meta">10:00 – 11:30 · Medical Category (Protected / Fixed)</span>
-                    </div>
-                    <span class="event-tag tag-pinned">IMMUTABLE</span>
-                  </div>
-                </div>
-
-                <!-- 14:00 - 15:00 -->
-                <div class="time-slot" id="slotTeamSync">
-                  <span class="slot-time">14:00</span>
-                  <div class="slot-card pinned">
-                    <div class="event-info">
-                      <span class="event-title">👥 Team Project Sync</span>
-                      <span class="event-meta">14:00 – 15:00 · Engineering All-Hands (Pinned)</span>
-                    </div>
-                    <span class="event-tag tag-pinned">PINNED</span>
-                  </div>
-                </div>
-
-                <!-- 15:00 Dynamic Slot Container (Urgent task appears here) -->
-                <div class="time-slot" id="dynamicSlotRow" style="display: none;">
-                  <span class="slot-time" style="color: var(--apple-orange);">15:00</span>
-                  <div class="slot-card new-urgent">
-                    <div class="event-info">
-                      <span class="event-title" style="color: #9a3412;">⚡ Security Token Leak Audit</span>
-                      <span class="event-meta">15:00 – 15:45 · Urgent Priority (Autonomously Scheduled)</span>
-                    </div>
-                    <span class="event-tag tag-urgent">NEW · URGENT</span>
-                  </div>
-                </div>
-
-                <!-- 15:30 Movable Slot -->
-                <div class="time-slot" id="slotUiProto">
-                  <span class="slot-time" id="timeUiProto">15:30</span>
-                  <div class="slot-card movable" id="cardUiProto">
-                    <div class="event-info">
-                      <span class="event-title">🎨 UI Prototyping & Review</span>
-                      <span class="event-meta" id="metaUiProto">15:30 – 16:30 · Flexible Internal Task</span>
-                    </div>
-                    <span class="event-tag tag-movable" id="tagUiProto">MOVABLE</span>
-                  </div>
-                </div>
-
-                <!-- 17:00 Deep Work -->
-                <div class="time-slot">
-                  <span class="slot-time">17:00</span>
-                  <div class="slot-card">
-                    <div class="event-info">
-                      <span class="event-title">💻 Deep Work: API Connectors</span>
-                      <span class="event-meta">17:00 – 18:30 · Focus Window</span>
-                    </div>
-                    <span class="cal-pill">PLANNED</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Right Details: Explain Why & Traces -->
-            <div class="demo-details">
-              <div class="sidebar-section-title">Cognitive Evidence ('Explain Why')</div>
-
-              <div class="explain-why-box" id="explainBox">
-                <span class="explain-title">💡 System Ready</span>
-                <p class="explain-item" style="border-left-color: var(--text-tertiary);">
-                  Select a scenario on the left and run resolution to inspect the transparent evidence trail.
-                </p>
-              </div>
-
-              <div class="sidebar-section-title">Live Agent Telemetry (JSONL)</div>
-              <div class="traces-mini" id="tracesTerminal">
-                <span class="trace-line">[INFO] System initialized.</span>
-                <span class="trace-line trace-success">[ZETARIS] 3 federated sources online.</span>
-                <span class="trace-line trace-model">[MODEL] nvidia/nemotron-3-super-120b active.</span>
-              </div>
-            </div>
-
+          <div class="card">
+            <span class="card-icon">🧱</span>
+            <span class="card-heading">Rigid Schedules</span>
+            <p class="card-body">Calendars treat all events as immovable blocks. They cannot tell a solo focus task from an important client meeting.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">🤖</span>
+            <span class="card-heading">Chatbots Fail</span>
+            <p class="card-body">Standard AI bots are just simple prompt wrappers. They hallucinate free time, overwrite doctor visits, and cannot explain why.</p>
           </div>
         </div>
 
+        <div class="slide-footer">
+          <span>TimePilot AI · Problem & Target Users</span>
+          <span>Slide 2 of 8</span>
+        </div>
       </div>
-    </section>
 
-    <!-- ========================================== -->
-    <!-- SLIDE 3: REASONING ARCHITECTURE DEEP DIVE  -->
-    <!-- ========================================== -->
-    <section class="slide-section" id="slide-2">
-      <div class="content-box">
-        <div class="eyebrow">
-          <span class="eyebrow-pill">Track 03 Deep Dive</span>
-          <span>Iterative Self-Correcting State Machine</span>
-        </div>
-        <h2 class="headline">Reasoning Architecture</h2>
-        <p class="subhead">
-          Replaces fragile linear chains (A → B → C) with collaborative multi-agent critique, active constraint rejection, and dynamic branching recovery.
-        </p>
+      <!-- SLIDE 3: The Solution -->
+      <div class="slide" id="slide-3">
+        <div class="tag">02 / The Solution</div>
+        <h2 class="title">TimePilot AI: An Agent That Does Real Work</h2>
+        <p class="subtitle">An autonomous partner that connects data, negotiates conflicts, and protects your time.</p>
 
-        <!-- Interactive Flow Diagram -->
-        <div class="flow-container">
-          
-          <!-- Node 1: Planner -->
-          <div class="agent-node">
-            <div class="node-icon-box">🎯</div>
-            <span class="node-name">PlannerAgent</span>
-            <span class="node-role">Scout Intent Engine: Urgency scoring & goal decomposition</span>
-            <span class="node-model-tag">nemotron-3-super</span>
-          </div>
-
-          <div class="flow-arrow">
-            <span>delegate</span>
-            →
-          </div>
-
-          <!-- Node 2: Context -->
-          <div class="agent-node">
-            <div class="node-icon-box">🗄️</div>
-            <span class="node-name">ContextAgent</span>
-            <span class="node-role">Zetaris USL queries + Meterless H-MEM habit recall</span>
-            <span class="node-model-tag">nemotron-3-super</span>
-          </div>
-
-          <div class="flow-arrow">
-            <span>propose slot</span>
-            →
-          </div>
-
-          <!-- Node 3: Critic -->
-          <div class="agent-node">
-            <div class="node-icon-box" style="border-color: rgba(255, 59, 48, 0.4);">⚖️</div>
-            <span class="node-name" style="color: var(--apple-red);">ConflictCritic</span>
-            <span class="node-role">Evaluates Zetaris DQ rules & collisions. Rejects on overlap!</span>
-            <span class="node-model-tag" style="color: var(--apple-red); background: #fee2e2;">nemotron-3.5-lightning</span>
-          </div>
-
-          <div class="flow-arrow">
-            <span style="color: var(--apple-green);">approved</span>
-            →
-          </div>
-
-          <!-- Node 4: Reconciler -->
-          <div class="agent-node">
-            <div class="node-icon-box">⚡</div>
-            <span class="node-name">ReconcilerAgent</span>
-            <span class="node-role">Synthesizes plan, commits H-MEM episodes, emits Explain Why</span>
-            <span class="node-model-tag">nemotron-3-super</span>
-          </div>
-
-        </div>
-
-        <!-- 3 Pillars Grid -->
-        <div class="grid-3" style="margin-top: 24px;">
-          <div class="apple-card">
-            <div class="card-badge badge-blue">COLLABORATIVE LOOP</div>
-            <div class="card-title">Active Constraint Critique</div>
-            <p class="card-text">Candidate slots are rigorously stress-tested against 4 Zetaris Data Quality rules and existing calendar commitments before acceptance.</p>
-          </div>
-          <div class="apple-card">
-            <div class="card-badge badge-purple">DYNAMIC BRANCHING</div>
-            <div class="card-title">Automated Conflict Recovery</div>
-            <p class="card-text">When ConflictCritic rejects a slot, it triggers a retry branch (<code>retry_count += 1</code>) with narrowed search parameters to negotiate movable events.</p>
-          </div>
-          <div class="apple-card">
-            <div class="card-badge badge-green">OBSERVABILITY</div>
-            <div class="card-title">Auditable Model Traces</div>
-            <p class="card-text">Every action emits structured JSONL telemetry logging the specific NVIDIA model, confidence score, and input/output summaries.</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- SLIDE 4: SPONSOR TECHNOLOGY INTEGRATION    -->
-    <!-- ========================================== -->
-    <section class="slide-section alt-bg" id="slide-3">
-      <div class="content-box">
-        <div class="eyebrow">
-          <span class="eyebrow-pill">Sponsor Stack</span>
-          <span>Load-Bearing Architectural Integration</span>
-        </div>
-        <h2 class="headline">Engineered with Sponsor Tech</h2>
-        <p class="subhead">Every sponsor technology performs a critical, load-bearing role in the system architecture.</p>
-
-        <!-- Bento Grid of Sponsors -->
         <div class="grid-2">
-          
-          <!-- Zetaris -->
-          <div class="apple-card highlight">
-            <div class="card-badge badge-blue">DATA LAYER · FOUNDATIONAL</div>
-            <div class="card-title" style="color: var(--apple-blue);">Zetaris Unified Semantic Layer (USL)</div>
-            <p class="card-text">Eliminates fragmented intelligence by federating 3 disconnected silos:</p>
+          <div class="card blue">
+            <span class="card-heading">Four Core Capabilities</span>
             <ul class="card-list">
-              <li><strong>src_calendar_events:</strong> Scheduled commitments, mobility, and pinned flags.</li>
-              <li><strong>src_task_backlog:</strong> High-priority Jira/Linear engineering issues and estimates.</li>
-              <li><strong>src_user_preferences:</strong> Work hours, 15-minute buffer rules, protected categories.</li>
-              <li><strong>Semantic SQL Views:</strong> Feasibility calculation (<code>usl_cross_source_feasibility</code>) executed directly in SQL, saving 70% development time over custom Python loops.</li>
-              <li><strong>4 Automated Data Quality Rules:</strong> Pre-commit gates verifying chronological order, pinned exclusivity, valid priority, and identifier integrity.</li>
+              <li><strong>Unified Semantic Ingestion:</strong> Reads your calendar, task backlog, and buffer rules into one clear state.</li>
+              <li><strong>Hierarchical Memory (H-MEM):</strong> Remembers past decisions and adapts to your daily focus habits.</li>
+              <li><strong>Self-Correcting Conflict Resolution:</strong> Moves flexible tasks to make room for urgent deadlines automatically.</li>
+              <li><strong>Transparent 'Explain Why':</strong> Gives clear evidence for every schedule change with zero black-box confusion.</li>
             </ul>
           </div>
-
-          <!-- Meterless -->
-          <div class="apple-card">
-            <div class="card-badge badge-purple">ENGINES & GATEWAY</div>
-            <div class="card-title" style="color: var(--apple-purple);">Meterless Engines & Nightshift</div>
-            <p class="card-text">Provides human-like cognitive retention and intent extraction:</p>
+          <div class="card">
+            <span class="card-heading">Built for Real Life</span>
+            <p class="card-body" style="margin-bottom: 12px;">TimePilot does not just answer questions — it takes reliable, verified actions:</p>
             <ul class="card-list">
-              <li><strong>Meterless H-MEM Engine:</strong> 3-tier memory model: (1) Working Memory for turn candidate state, (2) Episodic Memory with recency decay, and (3) Long-Term Semantic Habits.</li>
-              <li><strong>Habit Consolidation:</strong> Reinforces user preferences (morning focus bias, flexible task shifts) into persistent Bayesian weights without prompt tuning.</li>
-              <li><strong>Meterless Scout Intent Engine:</strong> Decomposes complex natural language into urgency scores (0.0–1.0), durations, and slot parameters.</li>
-              <li><strong>Meterless Nightshift:</strong> OpenAI-compatible AI provider gateway hosting model endpoints.</li>
+              <li>Protects doctor visits and flights as strictly immutable.</li>
+              <li>Preserves 15-minute buffers between meetings to avoid burnout.</li>
+              <li>Gated by 4 automated Zetaris Data Quality rules before saving.</li>
             </ul>
           </div>
-
-          <!-- NVIDIA -->
-          <div class="apple-card">
-            <div class="card-badge badge-green">COMPUTE & SPEECH</div>
-            <div class="card-title" style="color: #15803d;">NVIDIA Nemotron & Riva ASR</div>
-            <p class="card-text">Specialized dual-model deployment and multilingual voice recognition:</p>
-            <ul class="card-list">
-              <li><strong>Nemotron-3-super-120b:</strong> High-capacity reasoning engine driving Planner, Context, and Reconciler agents for deep synthesis.</li>
-              <li><strong>Nemotron-3.5-lightning-30b:</strong> Low-latency evaluator powering ConflictCritic to audit calendar constraints in real-time.</li>
-              <li><strong>NVIDIA Riva Parakeet ASR:</strong> Streaming multilingual speech-to-text (Parakeet-RNNT 1.1B) via gRPC for hands-free voice commands.</li>
-            </ul>
-          </div>
-
-          <!-- Cursor -->
-          <div class="apple-card">
-            <div class="card-badge badge-orange">DEV ENVIRONMENT</div>
-            <div class="card-title" style="color: #c2410c;">Cursor with SpaceX AI</div>
-            <p class="card-text">Primary development environment across the 144-hour hackathon:</p>
-            <ul class="card-list">
-              <li><strong>Multi-file Contextual Reasoning:</strong> Rapidly scaffolded the 4-agent state machine and Zetaris DDL schema.</li>
-              <li><strong>101 Automated Unit Tests:</strong> Constructed complete conformance test suites for H-MEM memory lifecycle and USL Data Quality validation.</li>
-            </ul>
-          </div>
-
         </div>
 
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- SLIDE 5: PRODUCTION READINESS & CONCLUSION -->
-    <!-- ========================================== -->
-    <section class="slide-section" id="slide-4">
-      <div class="content-box">
-        <div class="eyebrow">
-          <span class="eyebrow-pill">Ready for Evaluation</span>
-          <span>Zero Friction Setup for Judges</span>
-        </div>
-        <h2 class="headline">Deterministic & Reproducible</h2>
-        <p class="subhead">A judge who has never seen your project should be able to run it, watch it work, and see how it got there.</p>
-
-        <table class="apple-table">
-          <thead>
-            <tr>
-              <th>Evaluation Criterion</th>
-              <th>How TimePilot AI Delivers</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Judge Clean Execution</strong></td>
-              <td>Runs in 1 click via Docker or local venv. No local GPU required. First-class <code>SAMPLE_MODE=true</code> fallback runs real agent logic without external API credentials.</td>
-              <td><span class="card-badge badge-green" style="margin:0;">VERIFIED</span></td>
-            </tr>
-            <tr>
-              <td><strong>Programmatic Driving</strong></td>
-              <td>Fully operable via <code>POST /run</code> REST endpoint with structured input/output examples. UI doesn't block automated evaluation.</td>
-              <td><span class="card-badge badge-green" style="margin:0;">READY</span></td>
-            </tr>
-            <tr>
-              <td><strong>No Hardcoded Mocks</strong></td>
-              <td>All 3 sample inputs generate completely distinct, traceable scheduling actions validated against dynamic calendar state.</td>
-              <td><span class="card-badge badge-green" style="margin:0;">PASSED</span></td>
-            </tr>
-            <tr>
-              <td><strong>Security & Secrets</strong></td>
-              <td>Zero API keys committed. Zero credentials in git history. Checked against strict disqualification regex.</td>
-              <td><span class="card-badge badge-green" style="margin:0;">CLEAN</span></td>
-            </tr>
-            <tr>
-              <td><strong>Public Open Source</strong></td>
-              <td>Publicly accessible repository on GitHub with detailed documentation and test instructions.</td>
-              <td><span class="card-badge badge-blue" style="margin:0;">PUBLIC</span></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style="margin-top: 36px; text-align: center;">
-          <a href="https://github.com/GubarVlad/TimePilot_AI" target="_blank" class="trigger-demo-btn" style="text-decoration: none; padding: 14px 32px; font-size: 15px; border-radius: 9999px; display: inline-flex;">
-            View Public GitHub Repository ↗
-          </a>
+        <div class="slide-footer">
+          <span>TimePilot AI · Solution Overview</span>
+          <span>Slide 3 of 8</span>
         </div>
       </div>
-    </section>
 
-  </div>
+      <!-- SLIDE 4: Product Interface Showcase -->
+      <div class="slide" id="slide-4">
+        <div class="tag">03 / Product Interface</div>
+        <h2 class="title">Clean, Intuitive Experience</h2>
+        <p class="subtitle">A visual schedule matrix paired with verifiable "Explain Why" reasoning.</p>
+
+        <div class="ui-showcase">
+          <!-- Calendar side -->
+          <div class="calendar-mock">
+            <div class="mock-header">
+              <span>📅 Tuesday, October 27, 2026</span>
+              <span style="color: var(--blue); font-size: 11px;">15m Buffers Active</span>
+            </div>
+            <div class="mock-row">
+              <span class="mock-time">10:00</span>
+              <div class="mock-event pinned">
+                <span>🩺 Dentist Appointment</span>
+                <span style="font-size: 10px; font-weight: bold;">FIXED</span>
+              </div>
+            </div>
+            <div class="mock-row">
+              <span class="mock-time">14:00</span>
+              <div class="mock-event pinned">
+                <span>👥 Team Project Sync</span>
+                <span style="font-size: 10px; font-weight: bold;">PINNED</span>
+              </div>
+            </div>
+            <div class="mock-row">
+              <span class="mock-time" style="color: var(--orange);">15:00</span>
+              <div class="mock-event urgent">
+                <span>⚡ Security Token Leak Audit</span>
+                <span style="font-size: 10px; font-weight: bold;">NEW · URGENT</span>
+              </div>
+            </div>
+            <div class="mock-row">
+              <span class="mock-time" style="color: var(--purple);">15:45</span>
+              <div class="mock-event shifted">
+                <span>🎨 UI Prototyping & Review</span>
+                <span style="font-size: 10px; font-weight: bold;">SHIFTED (+15m)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Explain why side -->
+          <div class="explain-mock">
+            <span class="explain-tag">🔍 Explain Why (Evidence)</span>
+            <div class="explain-text">
+              <strong>1. Intent:</strong> Urgent task detected via Scout Intent (urgency 0.96).<br><br>
+              <strong>2. Conflict Handled:</strong> 14:00 was occupied by Team Sync. Critic rejected it.<br><br>
+              <strong>3. Task Shifted:</strong> UI Prototyping moved from 15:30 → 15:45 based on user habit.<br><br>
+              <strong>4. Quality Check:</strong> 4/4 Zetaris Data Quality rules passed.
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>TimePilot AI · UI & Evidence Drawer</span>
+          <span>Slide 4 of 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Reasoning Architecture -->
+      <div class="slide" id="slide-5">
+        <div class="tag">04 / Reasoning Architecture</div>
+        <h2 class="title">Collaborative Multi-Agent Critique Loop</h2>
+        <p class="subtitle">Replacing fragile single-pass pipelines with active critique, rejection, and retries.</p>
+
+        <div class="flow-row">
+          <div class="flow-step">
+            <div class="flow-circle">🎯</div>
+            <span class="flow-name">PlannerAgent</span>
+            <span class="flow-desc">Scout Intent: Urgency & slot parsing</span>
+          </div>
+          <div class="flow-divider">→</div>
+          <div class="flow-step">
+            <div class="flow-circle">🗄️</div>
+            <span class="flow-name">ContextAgent</span>
+            <span class="flow-desc">Queries Zetaris USL & H-MEM memory</span>
+          </div>
+          <div class="flow-divider">→</div>
+          <div class="flow-step">
+            <div class="flow-circle" style="border-color: var(--red); color: var(--red);">⚖️</div>
+            <span class="flow-name" style="color: var(--red);">ConflictCritic</span>
+            <span class="flow-desc">Rejects overlaps & demands retry</span>
+          </div>
+          <div class="flow-divider">→</div>
+          <div class="flow-step">
+            <div class="flow-circle">⚡</div>
+            <span class="flow-name">ReconcilerAgent</span>
+            <span class="flow-desc">Commits plan & emits Explain Why</span>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <span class="card-heading">Active Rejection</span>
+            <p class="card-body">ConflictCritic does not blindly accept slots. If a collision exists, it sends an explicit rejection (<code>retry_count += 1</code>).</p>
+          </div>
+          <div class="card">
+            <span class="card-heading">Dynamic Branching</span>
+            <p class="card-body">The agent negotiates movable vs fixed tasks, finding an optimal alternate window without human intervention.</p>
+          </div>
+          <div class="card">
+            <span class="card-heading">Auditable Traces</span>
+            <p class="card-body">Every handoff, model name, and confidence score is saved directly to <code>logs/agent_traces.jsonl</code>.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>TimePilot AI · 4-Agent Architecture Loop</span>
+          <span>Slide 5 of 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: Sponsor Technology -->
+      <div class="slide" id="slide-6">
+        <div class="tag">05 / Sponsor Stack</div>
+        <h2 class="title">Built with Sponsor Technologies</h2>
+        <p class="subtitle">Each sponsor tool plays a genuine, load-bearing role in the architecture.</p>
+
+        <div class="grid-4">
+          <div class="card blue">
+            <span class="card-heading">Zetaris</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--blue);">DATA LAYER</span>
+            <p class="card-body">Federates 3 data sources: calendar events, task backlog, and buffer rules. Offloads feasibility queries to SQL views.</p>
+          </div>
+          <div class="card purple">
+            <span class="card-heading">Meterless</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--purple);">ENGINES & GATEWAY</span>
+            <p class="card-body">H-MEM engine retains user habits over time. Scout Intent classifies urgency. Nightshift acts as the AI provider.</p>
+          </div>
+          <div class="card">
+            <span class="card-heading">NVIDIA</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--green);">NEMOTRON & RIVA</span>
+            <p class="card-body">Nemotron 3 Super (120B) powers deep planning; Nemotron 3.5 Lightning (30B) powers fast critic checks. Riva Parakeet adds voice.</p>
+          </div>
+          <div class="card">
+            <span class="card-heading">Cursor</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--orange);">DEV ENVIRONMENT</span>
+            <p class="card-body">Used with SpaceX AI for rapid multi-file scaffolding, writing SQL schemas, and building our 101 automated unit tests.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>TimePilot AI · Sponsor Technology Integration</span>
+          <span>Slide 6 of 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: What Was Unique -->
+      <div class="slide" id="slide-7">
+        <div class="tag">06 / Innovation & Uniqueness</div>
+        <h2 class="title">What Makes Our Approach Unique</h2>
+        <p class="subtitle">Designed to stand out on the hackathon score sheet.</p>
+
+        <div class="grid-3">
+          <div class="card">
+            <span class="card-icon">🔄</span>
+            <span class="card-heading">Closed-Loop Self-Correction</span>
+            <p class="card-body">Not a linear pipeline. ConflictCritic can reject proposed slots and force the loop to reconsider with tighter constraints.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">🧠</span>
+            <span class="card-heading">Habit Consolidation</span>
+            <p class="card-body">Meterless H-MEM does not just store chat text. It strengthens user habits (like morning focus protection) after every accepted change.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">📋</span>
+            <span class="card-heading">Verifiable Evidence Trail</span>
+            <p class="card-body">Every calendar update produces an auditable breakdown linking intent, Zetaris queries, memory recall, and quality checks.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>TimePilot AI · Unique Sponsor Integration</span>
+          <span>Slide 7 of 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: Ready for Evaluation -->
+      <div class="slide" id="slide-8">
+        <div class="tag">07 / Evaluation & Quality</div>
+        <h2 class="title">Ready for Judges to Test</h2>
+        <p class="subtitle">Built with zero friction for evaluation from a clean checkout.</p>
+
+        <div class="grid-3" style="margin-bottom: 24px;">
+          <div class="card blue">
+            <span class="card-heading">1-Command Setup</span>
+            <p class="card-body">Runs in seconds via Docker or Python virtualenv. No local GPU required.</p>
+          </div>
+          <div class="card">
+            <span class="card-heading">Sample Mode</span>
+            <p class="card-body"><code>SAMPLE_MODE=true</code> runs real agent logic without needing external API keys or active servers.</p>
+          </div>
+          <div class="card purple">
+            <span class="card-heading">101 Passing Tests</span>
+            <p class="card-body">Full suite testing multi-agent loop, Zetaris queries, and Meterless memory lifecycle.</p>
+          </div>
+        </div>
+
+        <div class="card" style="text-align: center; padding: 20px;">
+          <p style="font-weight: 600; font-size: 15px; color: var(--text);">
+            Public GitHub Repository: <a href="https://github.com/GubarVlad/TimePilot_AI" target="_blank" style="color: var(--blue); text-decoration: none;">github.com/GubarVlad/TimePilot_AI</a>
+          </p>
+          <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Zero secrets committed · Public · Pre-submission checklist verified</span>
+        </div>
+
+        <div class="slide-footer">
+          <span>TimePilot AI · Open Agent Hackathon 2026</span>
+          <span>Slide 8 of 8</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
 
   <script>
-    const deck = document.getElementById('deckContainer');
-    const dockLinks = document.querySelectorAll('.dock-link');
-    const sections = document.querySelectorAll('.slide-section');
+    const slides = document.querySelectorAll('.slide');
+    const slideIndexEl = document.getElementById('slideIndex');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnFull = document.getElementById('btnFull');
+    let currentSlide = 0;
 
-    function scrollToSlide(index) {
-      if (sections[index]) {
-        sections[index].scrollIntoView({ behavior: 'smooth' });
+    function showSlide(index) {
+      if (index >= 0 && index < slides.length) {
+        slides.forEach(s => s.classList.remove('active'));
+        slides[index].classList.add('active');
+        currentSlide = index;
+        slideIndexEl.textContent = `${currentSlide + 1} / ${slides.length}`;
       }
     }
 
-    // ScrollSpy to update active dock link
-    deck.addEventListener('scroll', () => {
-      const scrollPos = deck.scrollTop + (deck.clientHeight / 2);
-      sections.forEach((sec, idx) => {
-        if (scrollPos >= sec.offsetTop && scrollPos < sec.offsetTop + sec.offsetHeight) {
-          dockLinks.forEach(link => link.classList.remove('active'));
-          if (dockLinks[idx]) dockLinks[idx].classList.add('active');
-        }
-      });
+    btnNext.addEventListener('click', () => {
+      if (currentSlide < slides.length - 1) showSlide(currentSlide + 1);
+    });
+
+    btnPrev.addEventListener('click', () => {
+      if (currentSlide > 0) showSlide(currentSlide - 1);
     });
 
     // Keyboard navigation
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-        e.preventDefault();
-        deck.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        e.preventDefault();
-        deck.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) showSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        if (currentSlide > 0) showSlide(currentSlide - 1);
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
       }
     });
-
-    const btnFullscreen = document.getElementById('btnFullscreen');
-    btnFullscreen.addEventListener('click', toggleFullscreen);
 
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
@@ -1339,124 +873,7 @@
       }
     }
 
-    // ==========================================
-    // INTERACTIVE LIVE DEMO STATE LOGIC
-    // ==========================================
-    let currentScenarioId = 1;
-    let isExecuted = false;
-
-    function selectScenario(id) {
-      currentScenarioId = id;
-      document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById(id === 1 ? 'btnScen1' : 'btnScen2');
-      if (activeBtn) activeBtn.classList.add('active');
-
-      resetDemoState();
-    }
-
-    function resetDemoState() {
-      isExecuted = false;
-      document.getElementById('dynamicSlotRow').style.display = 'none';
-      document.getElementById('timeUiProto').textContent = '15:30';
-      document.getElementById('metaUiProto').textContent = '15:30 – 16:30 · Flexible Internal Task';
-      document.getElementById('cardUiProto').classList.remove('shifted');
-      document.getElementById('tagUiProto').textContent = 'MOVABLE';
-
-      document.getElementById('liveAgentStatus').textContent = 'Agent Ready · Zetaris USL Active';
-      document.getElementById('liveAgentStatus').style.color = 'var(--apple-green)';
-
-      document.getElementById('explainBox').innerHTML = `
-        <span class="explain-title">💡 System Ready</span>
-        <p class="explain-item" style="border-left-color: var(--text-tertiary);">
-          Click "Run Live Resolution" to see TimePilot autonomously reason, critique, and schedule without collisions.
-        </p>
-      `;
-
-      document.getElementById('tracesTerminal').innerHTML = `
-        <span class="trace-line">[INFO] System initialized.</span>
-        <span class="trace-line trace-success">[ZETARIS] 3 federated sources online.</span>
-        <span class="trace-line trace-model">[MODEL] nvidia/nemotron-3-super-120b active.</span>
-      `;
-    }
-
-    function executeCurrentScenario() {
-      if (currentScenarioId === 1) {
-        executeScenario1();
-      } else {
-        executeScenario2();
-      }
-    }
-
-    function executeScenario1() {
-      const statusEl = document.getElementById('liveAgentStatus');
-      const termEl = document.getElementById('tracesTerminal');
-      const explainEl = document.getElementById('explainBox');
-
-      statusEl.textContent = 'Reasoning in progress...';
-      statusEl.style.color = 'var(--apple-orange)';
-
-      termEl.innerHTML += `
-        <span class="trace-line trace-model">[PLANNER] Request: 'Urgent security audit at 14:00' (urgency: 0.96)</span>
-        <span class="trace-line">[CONTEXT] Queried Zetaris USL schedule state.</span>
-        <span class="trace-line trace-warn">⚠ [CRITIC] Candidate slot 14:00 COLLIDES with 'Team Project Sync'!</span>
-        <span class="trace-line">[CRITIC] Status: needs_revision. Triggering retry branch (retry_count=1)...</span>
-      `;
-      termEl.scrollTop = termEl.scrollHeight;
-
-      setTimeout(() => {
-        // Shift UI prototyping
-        document.getElementById('dynamicSlotRow').style.display = 'grid';
-        document.getElementById('timeUiProto').textContent = '15:45';
-        document.getElementById('metaUiProto').textContent = '15:45 – 16:45 · Shifted by ConflictCritic';
-        document.getElementById('cardUiProto').classList.add('shifted');
-        document.getElementById('tagUiProto').textContent = 'SHIFTED';
-
-        statusEl.textContent = 'Resolution Approved · Zero Conflicts';
-        statusEl.style.color = 'var(--apple-green)';
-
-        termEl.innerHTML += `
-          <span class="trace-line trace-success">✓ [CRITIC] Approved alternate slot 15:00-15:45. Shifted movable task.</span>
-          <span class="trace-line trace-success">✓ [RECONCILER] Plan committed to Zetaris USL and H-MEM episode store.</span>
-        `;
-        termEl.scrollTop = termEl.scrollHeight;
-
-        explainEl.innerHTML = `
-          <span class="explain-title" style="color: var(--apple-blue);">🎯 Resolution Justification:</span>
-          <p class="explain-item"><strong>1. Scout Intent:</strong> Classified as critical urgency (0.96 score).</p>
-          <p class="explain-item"><strong>2. Zetaris USL:</strong> 14:00 rejected due to pinned Team Sync meeting.</p>
-          <p class="explain-item"><strong>3. H-MEM Memory:</strong> Recalled user habit: <em>flexible_task_shift_preference</em>.</p>
-          <p class="explain-item"><strong>4. Action:</strong> Scheduled audit at 15:00–15:45; shifted UI task to 15:45. All 4 Data Quality rules passed.</p>
-        `;
-      }, 700);
-    }
-
-    function executeScenario2() {
-      const statusEl = document.getElementById('liveAgentStatus');
-      const termEl = document.getElementById('tracesTerminal');
-      const explainEl = document.getElementById('explainBox');
-
-      statusEl.textContent = 'Searching focus slots...';
-      statusEl.style.color = 'var(--apple-blue)';
-
-      termEl.innerHTML += `
-        <span class="trace-line trace-model">[PLANNER] Intent: QUERY_FREE_TIME (dur=90m)</span>
-        <span class="trace-line">[CONTEXT] Querying Zetaris USL free capacity and 15m buffer rules...</span>
-        <span class="trace-line trace-success">✓ [USL] Found 2 focus windows: 08:30-10:00 and 17:00-18:30.</span>
-      `;
-      termEl.scrollTop = termEl.scrollHeight;
-
-      setTimeout(() => {
-        statusEl.textContent = 'Focus Windows Discovered';
-        statusEl.style.color = 'var(--apple-green)';
-
-        explainEl.innerHTML = `
-          <span class="explain-title" style="color: var(--apple-indigo);">🔍 Focus Windows Detected:</span>
-          <p class="explain-item"><strong>Window A:</strong> 08:30–10:00 (Prior to Dentist Appointment).</p>
-          <p class="explain-item"><strong>Window B:</strong> 17:00–18:30 (After afternoon review block).</p>
-          <p class="explain-item"><strong>Buffer Safety:</strong> Guaranteed 15-minute travel and context switch buffers preserved.</p>
-        `;
-      }, 500);
-    }
+    btnFull.addEventListener('click', toggleFullscreen);
   </script>
 </body>
 </html>
