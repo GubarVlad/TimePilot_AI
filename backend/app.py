@@ -333,8 +333,9 @@ def optional_zetaris_context() -> dict[str, Any] | None:
         # A failed integration must never stop normal calendar planning.
         return {"query_configured": True, "available": False, "error": type(exc).__name__}
 
-# Project root is one level above backend/, so .env, frontend/, and data/ remain in one place.
-ROOT = Path(__file__).resolve().parent.parent
+# Support both layouts: app.py in the project root or inside backend/.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT = _SCRIPT_DIR.parent if _SCRIPT_DIR.name.lower() == "backend" else _SCRIPT_DIR
 WEB_DIR = ROOT / "frontend"
 DATA_DIR = Path(os.getenv("DATA_DIR", str(ROOT / "data"))).expanduser()
 EVENTS_FILE = DATA_DIR / "events.json"
@@ -466,9 +467,13 @@ def duration_of(event: dict[str, Any]) -> int:
 def priority_value(value: Any) -> str:
     val = str(value or "medium").lower().strip()
     synonyms = {
-        "низкая": "low", "обычная": "medium", "средняя": "medium",
-        "высокая": "high", "срочная": "urgent", "критическая": "urgent",
-        "urgent": "urgent", "high": "high", "medium": "medium", "low": "low",
+        "низкая": "low", "низкий": "low", "обычная": "medium", "средняя": "medium",
+        "высокая": "high", "высокий": "high", "срочная": "urgent", "срочный": "urgent", "критическая": "urgent",
+        "urgent": "urgent", "critical": "urgent", "asap": "urgent", "immediate": "urgent",
+        "high": "high", "high priority": "high", "important": "high",
+        "medium": "medium", "normal": "medium", "ordinary": "medium", "regular": "medium",
+        "normal priority": "medium", "low": "low", "low priority": "low", "minor": "low",
+        "not urgent": "medium", "no rush": "medium",
     }
     val = synonyms.get(val, val)
     return val if val in {"low", "medium", "high", "urgent"} else "medium"
@@ -479,8 +484,22 @@ def priority_score(value: Any) -> int:
 
 
 def explicit_priority_from_text(message: str) -> str | None:
-    """Infer only explicit priority signals; handle negation before positive keywords."""
-    text = re.sub(r"\s+", " ", message.lower()).strip()
+    """Infer explicit priority signals in English or Russian, respecting negation."""
+    text = re.sub(r"\s+", " ", str(message or "").lower()).strip()
+    # English signals are checked separately so "not urgent" never becomes urgent.
+    en_not_urgent = bool(re.search(r"\b(?:not\s+(?:very\s+)?urgent|not\s+critical|no\s+rush|doesn['’]?t\s+need\s+to\s+be\s+urgent|not\s+time[- ]sensitive)\b", text))
+    en_urgent = bool(re.search(r"\b(?:urgent|critical|immediately|asap|right away|due\s+today|deadline\s+(?:is\s+)?today)\b", text))
+    en_low = bool(re.search(r"\b(?:low[- ]priority|not\s+important|optional|can\s+wait|whenever\s+there['’]?s\s+time|non[- ]essential|minor\s+task|no\s+need\s+unless\s+there(?:\'s|\s+is)\s+time|only\s+if\s+there(?:\'s|\s+is)\s+time)\b", text))
+    en_high = bool(re.search(r"\b(?:high[- ]priority|important|high[- ]stakes|hard\s+deadline|deadline|due\s+(?:tomorrow|on|by))\b", text))
+    if en_urgent and not en_not_urgent:
+        return "urgent"
+    if en_low:
+        return "low"
+    if en_high:
+        return "high"
+    if en_not_urgent:
+        return "medium"
+
     urgent_negative = bool(re.search(r"\b(?:не\s+(?:очень\s+)?срочн\w*|не\s+критичн\w*|не\s+горит|не\s+нужно\s+срочно)\b", text))
     urgent_positive = bool(re.search(r"\b(?:срочн\w*|критичн\w*|горит|прямо сейчас|до конца дня|дедлайн сегодня)\b", text))
     low_priority = bool(re.search(r"\b(?:низк\w*\s+приоритет|необязательн\w*|не\s+важн\w*|неважно|можно потом|когда будет время|второстепенн\w*)\b", text))
@@ -496,7 +515,6 @@ def explicit_priority_from_text(message: str) -> str | None:
         return "medium"
     return None
 
-
 def inferred_priority(message: str, default: str = "medium") -> str:
     return explicit_priority_from_text(message) or default
 
@@ -504,6 +522,19 @@ def inferred_priority(message: str, default: str = "medium") -> str:
 def user_requests_real_world_booking(message: str) -> bool:
     """True only for a request for the AI to make a real booking, not schedule a to-do."""
     text = re.sub(r"\s+", " ", message.lower()).strip()
+    english_task_frame = bool(re.search(r"\b(?:task\s+to|remind\s+me\s+to|add\s+(?:a\s+)?task\s+to|schedule\s+(?:a\s+)?task\s+to|todo:|to-do:)\b", text))
+    if english_task_frame:
+        return False
+    if any(phrase in text for phrase in ("the appointment is already confirmed", "my appointment is confirmed", "already have a reservation", "the booking is confirmed", "add the confirmed appointment to my calendar", "put my existing reservation on the calendar")):
+        return False
+    english_booking_patterns = (
+        r"\b(?:book|reserve)\s+(?:me\s+)?(?:a\s+)?(?:table|restaurant|hotel|room|flight|train ticket|ticket)\b",
+        r"\b(?:make|get)\s+(?:me\s+)?an?\s+(?:appointment|reservation)\b",
+        r"\b(?:schedule|book)\s+(?:me\s+)?(?:with\s+)?(?:a\s+)?(?:doctor|dentist|therapist|lawyer|hairdresser|salon|clinic)\b",
+        r"\bmake\s+an?\s+appointment\s+(?:with|at)\b",
+    )
+    if any(re.search(pattern, text, re.I) for pattern in english_booking_patterns):
+        return True
     if any(phrase in text for phrase in (
         "добавь задачу", "поставь задачу", "запланируй задачу", "напомни мне",
         "сделай напоминание", "внеси задачу", "задача: записаться", "задача забронировать",
@@ -529,6 +560,10 @@ def user_requests_real_world_booking(message: str) -> bool:
 # Events that represent commitments with another person/business cannot be rescheduled
 # by this calendar app. A local calendar change does not alter the real-world booking.
 EXTERNAL_BOOKING_PATTERNS = [
+    r"\b(?:doctor|dentist|medical|therapy|therapist|lawyer|notary|hairdresser|salon|clinic)\s+(?:appointment|visit)\b",
+    r"\bappointment\s+(?:with|at)\s+(?:the\s+)?(?:doctor|dentist|therapist|lawyer|notary|hairdresser|salon|clinic)\b",
+    r"\b(?:restaurant|hotel|flight|train|bus)\s+(?:reservation|booking|ticket)\b",
+    r"\b(?:confirmed\s+)?(?:table|room|flight|train ticket)\s+(?:reservation|booking)\b",
     r"\b(?:запись|при[её]м|визит)\s+(?:к|у)\s+(?:врачу|стоматологу|зубному врачу|терапевту|хирургу|юристу|нотариусу|парикмахеру|мастеру|косметологу)\b",
     r"\b(?:запись|визит)\s+(?:в|на)\s+(?:клинику|больницу|поликлинику|стоматологию|салон|салон красоты|барбершоп|парикмахерскую|посольство|консульство|визовый центр|мфц|сервис|мастерскую|маникюр|педикюр)\b",
     r"\b(?:приём|прием)\s+(?:у|в)\s+(?:врача|стоматолога|косметолога|мастера)\b",
@@ -543,6 +578,8 @@ VALID_CATEGORIES = {"task", "meeting", "break", "personal", "other", "appointmen
 
 
 BOOKING_ADMIN_TASK_PATTERNS = [
+    r"\b(?:call|email|contact|research|find|look\s+for|arrange|book|schedule|check)\b.{0,90}\b(?:doctor|dentist|clinic|salon|restaurant|table|hotel|flight|ticket|appointment|reservation)\b",
+    r"\b(?:make|arrange)\s+(?:a\s+)?(?:call|booking\s+request|appointment\s+request)\b",
     r"\b(?:записаться|забронировать|позвонить|найти|подобрать|уточнить|проверить доступность|узнать)\b.{0,90}\b(?:врач\w*|стоматолог\w*|к врачу|при[её]м\w*|салон\w*|парикмахер\w*|ресторан\w*|кафе\w*|столик\w*|отел\w*|гостиниц\w*|билет\w*|брон\w*|свободн\w* время|наличие мест)\b",
     r"\b(?:позвонить|узнать|уточнить)\b.{0,60}\b(?:запись|брон\w*|свободн\w* время|время при[её]ма)\b",
 ]
@@ -581,6 +618,15 @@ def event_is_movable(event: dict[str, Any]) -> bool:
 def external_reschedule_confirmed(message: str) -> bool:
     """Only accept an explicit confirmation that a venue approved a new time."""
     text = re.sub(r"\s+", " ", message.lower()).strip()
+    english_confirmations = (
+        "the venue confirmed the new time", "the clinic confirmed the new time",
+        "the doctor agreed to the new time", "the appointment has already been rescheduled",
+        "the booking has already been moved", "the new time is confirmed with the venue",
+        "i confirmed the new time with the clinic", "the venue approved the change",
+        "the reservation change is confirmed", "the provider confirmed the reschedule",
+    )
+    if any(phrase in text for phrase in english_confirmations):
+        return True
     phrases = (
         "заведение подтвердило новое время", "заведение перенесло", "клиника подтвердила",
         "клиника перенесла", "врач перенёс", "врач перенес", "мне уже перенесли",
@@ -596,6 +642,14 @@ def external_reschedule_confirmed(message: str) -> bool:
 def external_cancellation_confirmed(message: str) -> bool:
     """Only accept an explicit statement that an external booking was already cancelled."""
     text = re.sub(r"\s+", " ", message.lower()).strip()
+    english_confirmations = (
+        "the reservation is already cancelled", "the appointment was already cancelled",
+        "i already cancelled the appointment with the clinic", "the venue confirmed the cancellation",
+        "the booking has been cancelled directly", "i cancelled it with the venue",
+        "the real appointment is cancelled", "the clinic cancelled the appointment",
+    )
+    if any(phrase in text for phrase in english_confirmations):
+        return True
     phrases = (
         "бронь уже отменена", "бронь уже отменил", "бронь уже отменила", "бронь отменили",
         "приём уже отменён", "прием уже отменен", "запись уже отменена", "запись уже отменена в клинике",
@@ -738,16 +792,23 @@ def read_store() -> dict[str, Any]:
 
 
 def write_store(data: dict[str, Any]) -> None:
-    """Persist to JSON as a local backup and to PostgreSQL when available."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    temporary = EVENTS_FILE.with_suffix(".tmp")
-    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    temporary.replace(EVENTS_FILE)
-    if _postgres_should_try():
+    """Atomically persist JSON and sync PostgreSQL when available."""
+    with STORE_LOCK:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        temporary = EVENTS_FILE.with_name(f".{EVENTS_FILE.name}.{secrets.token_hex(4)}.tmp")
         try:
-            postgres_replace_events(data.get("events", []))
-        except Exception as exc:
-            _warn_postgres_fallback(exc)
+            temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            temporary.replace(EVENTS_FILE)
+        finally:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+        if _postgres_should_try():
+            try:
+                postgres_replace_events(data.get("events", []))
+            except Exception as exc:
+                _warn_postgres_fallback(exc)
 
 def get_events(start: str | None = None, end: str | None = None) -> list[dict[str, Any]]:
     store = read_store()
@@ -771,19 +832,43 @@ def has_conflict(candidate: dict[str, Any], events: list[dict[str, Any]], skip_i
 
 
 def next_free_slot(day: str, duration: int, events: list[dict[str, Any]], start_after: str = "09:00") -> tuple[str, str] | None:
+    """Find the first free slot on the existing 15-minute search grid in O(n log n).
+
+    The grid is anchored at ``start_after`` to preserve the older behaviour for
+    non-quarter-hour requests (for example, searching after 09:07 checks 09:07,
+    09:22, 09:37, ...). Sorted intervals let us jump over conflicts instead of
+    testing every candidate against every event.
+    """
     duration = max(15, min(480, int(duration)))
     start_min = max(WORK_START, time_to_minutes(start_after))
-    reserved = []
+    if start_min + duration > WORK_END:
+        return None
+
+    reserved: list[tuple[int, int]] = []
     for event in events:
-        if event.get("date") == day:
-            reserved.append((time_to_minutes(event["start"]), time_to_minutes(event["end"])))
+        if event.get("date") != day:
+            continue
+        event_start = time_to_minutes(event["start"])
+        event_end = time_to_minutes(event["end"])
+        if event_end > start_min and event_start < WORK_END:
+            reserved.append((event_start, event_end))
     reserved.sort()
-    for start in range(start_min, WORK_END - duration + 1, 15):
-        end = start + duration
-        if not any(start < re_ and rs < end for rs, re_ in reserved):
-            return minutes_to_time(start), minutes_to_time(end)
-    # Do not return a slot earlier than start_after: callers use this to honour
-    # constraints such as "after 17:00" or to place a displaced task after its old block.
+    cursor = start_min
+    for reserved_start, reserved_end in reserved:
+        if reserved_end <= cursor:
+            continue
+        if reserved_start - cursor >= duration:
+            return minutes_to_time(cursor), minutes_to_time(cursor + duration)
+        # Jump to the first point on this search's 15-minute grid not before the
+        # end of the conflicting interval. Overlapping reservations are handled by
+        # the next loop iteration without restarting the search.
+        steps = max(0, (reserved_end - start_min + 14) // 15)
+        cursor = start_min + steps * 15
+        if cursor + duration > WORK_END:
+            return None
+
+    if cursor + duration <= WORK_END:
+        return minutes_to_time(cursor), minutes_to_time(cursor + duration)
     return None
 
 
@@ -807,27 +892,53 @@ def coerce_bool(value: Any, default: bool, field_name: str = "значение")
 def wants_auto_schedule(message: str) -> bool:
     """Whether the user explicitly asked the agent to choose a free time slot."""
     text = re.sub(r"\s+", " ", str(message or "").lower().replace("ё", "е")).strip()
-    return bool(re.search(
+    russian = re.search(
         r"\b(?:подбери|найди|выбери|предложи|распредели|оптимально\s+(?:поставь|размести|запланируй)|"
         r"запланируй|составь\s+(?:мне\s+)?(?:план|расписание))\b|"
-        r"\bв\s+(?:ближайшее\s+)?свободное\s+(?:время|окно)\b|"
-        r"\bпоставь\s+(?:на|в)\s+свободное\b",
-        text,
-    ))
+        r"\bв\s+(?:ближайшее\s+)?свободное\s+(?:время|окно)\b|\bпоставь\s+(?:на|в)\s+свободное\b", text)
+    english = re.search(
+        r"\b(?:find|suggest|choose|pick|select|offer|look\s+for)\b.{0,45}\b(?:free\s+(?:slot|time|window)|available\s+time)\b|"
+        r"\b(?:schedule|fit|place|put)\b.{0,45}\b(?:at\s+the\s+next\s+free\s+slot|in\s+an?\s+available\s+window)\b|"
+        r"\boptimi[sz]e\s+(?:my\s+)?(?:day|schedule|calendar)\b", text)
+    return bool(russian or english)
+
+
+def _mask_dot_clock_expressions(text: str) -> str:
+    """Mask H.MM clock expressions in explicit time context before date detection.
+
+    In European usage, "at 3.10" commonly means 03:10 while "3.10" alone can
+    mean 3 October. AM/PM and duration units are handled separately by the date
+    regex's negative lookahead.
+    """
+    pattern = re.compile(
+        r"\b(?:at|around|about|by|from|between|to|в|к|около|примерно|с|до|между)\s+"
+        r"(?P<clock>\d{1,2}\.\d{2})(?!\d)(?:\s*(?:a\.?m\.?|p\.?m\.?|am|pm))?",
+        re.I,
+    )
+    return pattern.sub(lambda match: match.group(0).replace(match.group("clock"), " " * len(match.group("clock")), 1), text)
 
 
 def explicit_date_in_text(message: str) -> bool:
-    """Return True only when a concrete date/day reference is present in the text."""
+    """Recognise explicit dates/day references in common English and Russian formats."""
     text = str(message or "").lower().replace("ё", "е")
-    return bool(re.search(
+    text = _mask_dot_clock_expressions(text)
+    patterns = (
         r"\b(?:сегодня|завтра|послезавтра|понедельник\w*|вторник\w*|среда|среды|среду|среде|средой|"
-        r"четверг\w*|пятниц\w*|суббот\w*|воскресень\w*|пн|вт|ср|чт|пт|сб|вс)\b|"
-        r"\b20\d{2}-\d{2}-\d{2}\b|\bчерез\s+\d+\s+дн\w*\b|"
-        r"\bчерез\s+(?:одну\s+)?недел\w*\b|\bследующ\w*\s+(?:недел\w*|понедельник\w*|"
-        r"вторник\w*|сред\w*|четверг\w*|пятниц\w*|суббот\w*|воскресень\w*)\b",
-        text,
-    ))
-
+        r"четверг\w*|пятниц\w*|суббот\w*|воскресень\w*|пн|вт|ср|чт|пт|сб|вс)\b",
+        r"\b(?:today|tomorrow|day\s+after\s+tomorrow|tonight|this\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|"
+        r"(?:next\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b",
+        r"\b20\d{2}-\d{2}-\d{2}\b",
+        r"(?<!\d)\d{1,2}[./-]\d{1,2}(?:[./-]20\d{2})?(?![\d./-])(?!\s*(?:hours?|hrs?|h|minutes?|mins?|min|days?|weeks?|months?|years?|час(?:а|ов)?|ч|минут\w*|мин|a\.?m\.?|p\.?m\.?|am|pm)\b)",
+        r"\b(?:через\s+\d+\s+дн\w*|через\s+(?:\d+\s+|одну\s+)?недел\w*|следующ\w*\s+недел\w*)\b",
+        r"\b\d{1,2}\s+(?:январ\w*|феврал\w*|март\w*|апрел\w*|ма[йяе]|июн\w*|июл\w*|"
+        r"август\w*|сентябр\w*|октябр\w*|ноябр\w*|декабр\w*)(?:\s+20\d{2})?\b",
+        r"\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|"
+        r"sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+20\d{2})?\b",
+        r"\b\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|"
+        r"sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b",
+        r"\bin\s+\d+\s+days?\b|\bin\s+(?:\d+|a|an|one|two|three|four|five|six|seven)\s+weeks?\b",
+    )
+    return any(re.search(pattern, text, re.I) for pattern in patterns)
 
 def normalize_event(raw: dict[str, Any], default_date: str | None = None) -> dict[str, Any]:
     title = re.sub(r"\s+", " ", str(raw.get("title", "")).strip())[:180]
@@ -1124,22 +1235,93 @@ def ambiguity_reply(title: str, matches: list[dict[str, Any]]) -> dict[str, Any]
 
 
 
-def extract_json(text: str) -> dict[str, Any]:
-    text = text.strip()
+def extract_json(text: Any) -> dict[str, Any]:
+    """Extract one JSON object from common hosted-LLM response wrappers.
+
+    Models sometimes surround JSON with Markdown, reasoning tags, or a short
+    preamble. Parse the first complete object instead of greedily slicing from
+    the first opening brace to the final closing brace.
+    """
+    if isinstance(text, dict):
+        return dict(text)
+    if isinstance(text, list):
+        parts = []
+        for item in text:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                value = item.get("text", item.get("content", ""))
+                if isinstance(value, str):
+                    parts.append(value)
+        text = "".join(parts)
+    text = str(text or "").lstrip("\ufeff").strip()
+    if not text:
+        raise ValueError("The AI response was empty.")
+
+    # Some reasoning-capable models emit a separate thought section before JSON.
+    if "</think>" in text.lower():
+        text = re.split(r"</think>", text, flags=re.I)[-1].strip()
+    text = re.sub(r"<\|(?:assistant|final|json)\|>", "", text, flags=re.I)
     text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.I)
-    text = re.sub(r"\s*```$", "", text)
+    text = re.sub(r"\s*```$", "", text).strip()
+    # Repair curly quote characters sometimes used around JSON keys/strings.
+    text = text.translate(str.maketrans({"“": '"', "”": '"', "‘": "'", "’": "'"}))
+
+    decoder = json.JSONDecoder()
+    # First try decoding from the beginning, then scan for a complete object.
     try:
         value = json.loads(text)
         if isinstance(value, dict):
             return value
-    except json.JSONDecodeError:
+        if isinstance(value, str) and value.lstrip().startswith("{"):
+            nested = json.loads(value)
+            if isinstance(nested, dict):
+                return nested
+    except (json.JSONDecodeError, TypeError):
         pass
-    start, end = text.find("{"), text.rfind("}")
-    if start >= 0 and end > start:
-        value = json.loads(text[start:end + 1])
-        if isinstance(value, dict):
-            return value
-    raise ValueError("AI вернул ответ в неожиданном формате. Попробуй ещё раз.")
+
+    for index, char in enumerate(text):
+        if char != "{":
+            continue
+        try:
+            value, _end = decoder.raw_decode(text[index:])
+            if isinstance(value, dict):
+                return value
+        except json.JSONDecodeError:
+            # A common small formatting defect is a trailing comma.
+            depth = 0
+            in_string = False
+            escaped = False
+            end_index = None
+            for cursor in range(index, len(text)):
+                current = text[cursor]
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif current == "\\":
+                        escaped = True
+                    elif current == '"':
+                        in_string = False
+                    continue
+                if current == '"':
+                    in_string = True
+                elif current == "{":
+                    depth += 1
+                elif current == "}":
+                    depth -= 1
+                    if depth == 0:
+                        end_index = cursor + 1
+                        break
+            if end_index is not None:
+                candidate = text[index:end_index]
+                candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
+                try:
+                    value = json.loads(candidate)
+                    if isinstance(value, dict):
+                        return value
+                except json.JSONDecodeError:
+                    continue
+    raise ValueError("The AI response did not contain a valid JSON object.")
 
 
 def sanitize_profile_preferences(raw: Any) -> dict[str, str]:
@@ -1177,6 +1359,9 @@ LANGUAGE AND STYLE:
 - Never claim an event was created, changed, or deleted until the backend confirms it. The backend validates and applies actions.
 - Distinguish an actual command from a question or hypothetical. “Delete X” is a command; “Should I delete X?” or “What if I move X?” is not. Respect negation and constraints such as “do not move”, “leave it as it is”, and “change only the title”.
 - Before a mutation, identify the exact event and the fields explicitly requested. Do not change unrelated fields. If the event, date, or requested field is ambiguous, ask for clarification. Never invent user requirements.
+- Ground every date and clock time in the user's message, the selected calendar date, or explicit conversation context. Never invent a clock time or turn a deadline into an appointment. If a task has no time and the user did not ask you to find a slot, ask for a time and do not create it yet. When a start time is given but duration is not, use 60 minutes for an ordinary task; preserve the existing duration on a move unless the user asks to resize it.
+- For English requests, understand natural variants such as “tomorrow”, “next Thursday”, “in three days”, “at 2:30 pm”, “half an hour”, “30 minutes later”, and “from 2 pm to 3 pm”. Use the backend's date/time parsers as ground truth. Do not misread duration numbers as clock times.
+- Analyze before acting: a request may ask to inspect, compare, plan, or discuss options without authorizing a calendar mutation. Do not mutate for hypothetical, negated, conditional, or advice-seeking messages.
 
 CALENDAR COMMITMENTS AND EXTERNAL BOOKINGS:
 - Distinguish flexible tasks (reading, email, project work) from real commitments involving a third party.
@@ -1273,33 +1458,61 @@ ACTIONS:
         "response_format": {"type": "json_object"},
         "stream": False,
     }
-    request = urllib.request.Request(
-        NVIDIA_BASE_URL,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-        method="POST",
-    )
+    def _call_model(call_payload: dict[str, Any]) -> dict[str, Any]:
+        request = urllib.request.Request(
+            NVIDIA_BASE_URL,
+            data=json.dumps(call_payload).encode("utf-8"),
+            headers={"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=40) as response:
+                response_data = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")[:500]
+            if exc.code in (401, 403):
+                raise RuntimeError("NVIDIA rejected the API key or the key does not have access to this model. Check NVIDIA_API_KEY and model access.") from exc
+            raise RuntimeError(f"NVIDIA API returned HTTP {exc.code}. {detail}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError("Could not connect to the NVIDIA API. Check your internet connection and NVIDIA_BASE_URL.") from exc
+        except TimeoutError as exc:
+            raise RuntimeError("The NVIDIA API timed out. Please try again.") from exc
+        if not isinstance(response_data, dict):
+            raise ValueError("The NVIDIA API returned a non-object response.")
+        try:
+            message_data = response_data["choices"][0]["message"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ValueError("The NVIDIA API response had no assistant message.") from exc
+        content = message_data.get("content")
+        if not content and isinstance(message_data.get("reasoning_content"), str):
+            content = message_data["reasoning_content"]
+        return extract_json(content)
+
     try:
-        with urllib.request.urlopen(request, timeout=40) as response:
-            response_data = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:500]
-        if exc.code in (401, 403):
-            raise RuntimeError("NVIDIA rejected the API key or the key does not have access to this model. Check NVIDIA_API_KEY and model access.") from exc
-        raise RuntimeError(f"NVIDIA API returned HTTP {exc.code}. {detail}") from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError("Could not connect to the NVIDIA API. Check your internet connection and NVIDIA_BASE_URL.") from exc
-    except TimeoutError as exc:
-        raise RuntimeError("The NVIDIA API timed out. Please try again.") from exc
-    try:
-        content = response_data["choices"][0]["message"]["content"]
-        if isinstance(content, list):
-            content = "".join(part.get("text", "") for part in content if isinstance(part, dict))
-        return extract_json(str(content))
-    except (KeyError, IndexError, TypeError, ValueError) as exc:
-        if isinstance(exc, ValueError) and "неожиданном формате" in str(exc):
-            raise
-        raise RuntimeError("The NVIDIA API returned a response that could not be parsed.") from exc
+        return _call_model(payload)
+    except ValueError:
+        # Retry once with an explicit formatting correction. This handles models
+        # that ignore JSON mode or wrap their answer in reasoning/prose tags.
+        retry_payload = dict(payload)
+        retry_messages = [dict(item) for item in payload["messages"]]
+        retry_messages[0]["content"] = str(retry_messages[0].get("content", "")) + (
+            "\n\nSTRICT OUTPUT REPAIR: Your previous output was not valid JSON. "
+            "Return exactly one valid JSON object matching the schema above. "
+            "Use double quotes, no comments, no Markdown fences, no trailing commas, "
+            "and no text before or after the object. If the intent is unclear, use "
+            '"action": "ask_clarification" and provide an English clarification.'
+        )
+        retry_payload["messages"] = retry_messages
+        try:
+            return _call_model(retry_payload)
+        except ValueError:
+            # Never turn malformed model text into a calendar mutation or a 400
+            # error shown to the user. Return a safe response that keeps the UI usable.
+            return {
+                "reply": "I couldn't safely interpret the AI response, so I haven't changed your calendar. Please rephrase your request or try again.",
+                "action": "ask_clarification",
+                "clarifying_question": "Could you rephrase what you want me to do? Nothing has been changed.",
+            }
 
 def stt_client_installed() -> bool:
     """Return whether the NVIDIA Riva Python client can actually be imported."""
@@ -1430,12 +1643,53 @@ def transcribe_audio(audio_bytes: bytes, language_code: str | None = None) -> st
 
 
 def parse_time_from_text(message: str) -> str | None:
-    """Parse clock times in common Russian forms, including day parts.
-
-    Examples: ``в 14:30``, ``на 9.15``, ``в 7 вечера``, ``в 3 часа дня``.
-    Day-part phrases are checked first so ``в 7 вечера`` is not misread as 07:00.
-    """
+    """Parse English and Russian clock times without confusing durations for times."""
     text = str(message or "").lower().replace("ё", "е")
+    if re.search(r"\bnoon\b", text):
+        return "12:00"
+    if re.search(r"\bmidnight\b", text):
+        return "00:00"
+    # AM/PM phrases may appear with or without a preposition: "at 2:30 pm", "3pm".
+    ampm = re.search(r"(?<![\w:.-])(?:at\s+|by\s+|around\s+|about\s+|from\s+|@\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![\w])", text)
+    if ampm:
+        hour, minute = int(ampm.group(1)), int(ampm.group(2) or 0)
+        marker = ampm.group(3).replace(".", "")
+        if not (1 <= hour <= 12 and 0 <= minute <= 59):
+            return None
+        if marker == "pm" and hour != 12:
+            hour += 12
+        elif marker == "am" and hour == 12:
+            hour = 0
+        return f"{hour:02d}:{minute:02d}"
+    # 24-hour clock, normally expressed with "at", "by", "around", or "@".
+    clock = re.search(r"\b(?:at|by|around|about|from|until|to|@)\s*(?!-)(\d{1,2})[:.](\d{2})\b", text)
+    if clock:
+        hour, minute = int(clock.group(1)), int(clock.group(2))
+        # In end/deadline phrasing, an unqualified 1–7 o'clock time usually means
+        # afternoon/evening in a day-planning context (e.g. "finish by 5:30").
+        # Do not infer AM/PM for neutral phrasing such as "at 5:30".
+        prefix = text[:clock.start()].rstrip()
+        if 1 <= hour <= 7 and re.search(r"\b(?:finish|end|wrap up|close|due|deadline)\s*$", prefix):
+            hour += 12
+        if 0 <= hour <= 23 and 0 <= minute < 60:
+            return f"{hour:02d}:{minute:02d}"
+    # Common human phrasing often omits minutes: "meet at 9", "finish by 5".
+    # Only accept a bare hour when anchored by a clock preposition; never parse
+    # "in 30 minutes", "for 2 hours", dates, or unrelated numbers as a time.
+    bare_hour = re.search(r"\b(?:at|by|around|about|from|until|to)\s+(\d{1,2})(?![\d:.])", text)
+    if bare_hour:
+        hour = int(bare_hour.group(1))
+        suffix = text[bare_hour.end():bare_hour.end() + 18]
+        if not re.match(r"\s*(?:minutes?|mins?|min\b|hours?|hrs?\b|days?\b)", suffix) and 0 <= hour <= 23:
+            prefix = text[:bare_hour.start()].rstrip()
+            if 1 <= hour <= 7 and re.search(r"\b(?:finish|end|wrap up|close|due|deadline)\s*$", prefix):
+                hour += 12
+            return f"{hour:02d}:00"
+    bare_clock = re.search(r"(?<![\w:.-])(\d{1,2}):(\d{2})(?![\w:])", text)
+    if bare_clock:
+        hour, minute = int(bare_clock.group(1)), int(bare_clock.group(2))
+        if 0 <= hour <= 23 and 0 <= minute < 60:
+            return f"{hour:02d}:{minute:02d}"
     daypart = re.search(
         r"\b(?:в|на|к)\s*(\d{1,2})(?:[:.](\d{2}))?"
         r"(?:\s*(?:час(?:а|ов)?|ч\b))?\s+(утра|дня|вечера|ночи)\b",
@@ -1475,7 +1729,7 @@ def parse_time_from_text(message: str) -> str | None:
         if 0 <= hour <= 23 and minute < 60:
             return f"{hour:02d}:{minute:02d}"
     if not matches:
-        matches = list(re.finditer(r"\b(\d{1,2}):(\d{2})\b", text))
+        matches = list(re.finditer(r"(?<![\w:.-])(\d{1,2}):(\d{2})\b", text))
         for match in matches:
             hour = int(match.group(1))
             minute = int(match.group(2))
@@ -1485,7 +1739,26 @@ def parse_time_from_text(message: str) -> str | None:
 
 
 def parse_duration(message: str) -> int:
-    text = message.lower().replace(",", ".")
+    text = str(message or "").lower().replace(",", ".")
+    english = text
+    if re.search(r"\b(?:half an hour|half hour)\b", english):
+        return 30
+    if re.search(r"\b(?:an hour and a half|one and a half hours|one hour and a half)\b", english):
+        return 90
+    combined_en = re.search(r"(\d+(?:\.\d+)?)[-\s]*(?:hours?|hrs?|h)\s*(?:and\s*)?(\d+)[-\s]*(?:minutes?|mins?|min)\b", english)
+    if combined_en:
+        return max(15, min(480, int(float(combined_en.group(1)) * 60) + int(combined_en.group(2))))
+    hour_en = re.search(r"\b(\d+(?:\.\d+)?)[-\s]*(?:hours?|hrs?|h)\b", english)
+    if hour_en:
+        return max(15, min(480, int(float(hour_en.group(1)) * 60)))
+    word_hour = re.search(r"\b(one|two|three|four|five|six|seven|eight)\s+hours?\b|\b(an|a)\s+hour\b", english)
+    if word_hour:
+        word = next((part for part in word_hour.groups() if part), "one")
+        nums = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8}
+        return nums[word] * 60
+    minute_en = re.search(r"\b(\d+)[-\s]*(?:minutes?|mins?|min)\b", english)
+    if minute_en:
+        return max(15, min(480, int(minute_en.group(1))))
     if "полтора часа" in text:
         return 90
     if "полчаса" in text:
@@ -1504,13 +1777,31 @@ def parse_duration(message: str) -> int:
 
 
 def explicit_duration_from_text(message: str) -> int | None:
-    """Return a duration only when a duration expression is actually present.
-
-    Unlike parse_duration(), this function does not silently return the 60-minute
-    default. Relative phrases such as "через 30 минут" and clock day-parts such as
-    "в 3 часа дня" are not treated as task durations.
-    """
+    """Return a duration only when an actual English or Russian duration is present."""
     text = re.sub(r"\s+", " ", str(message or "").lower().replace("ё", "е")).strip()
+    # English: avoid treating "in 30 minutes" as a task length or "at 3 hours" as one.
+    if re.search(r"\bhalf an hour\b|\bhalf hour\b", text):
+        return 30
+    if re.search(r"\b(?:an hour and a half|one and a half hours|one hour and a half)\b", text):
+        return 90
+    match = re.search(r"(\d+(?:\.\d+)?)[-\s]*(?:hours?|hrs?|h)\s*(?:and\s*)?(\d+)[-\s]*(?:minutes?|mins?|min)\b", text)
+    if match and not re.search(r"\bin\s*$", text[max(0, match.start()-8):match.start()]):
+        prefix = text[max(0, match.start()-24):match.start()]
+        if not re.search(r"\b(?:in|within|after|from)\s*$", prefix):
+            return max(15, min(480, int(float(match.group(1))*60)+int(match.group(2))))
+    for pattern, unit in ((r"(\d+(?:\.\d+)?)[-\s]*(?:hours?|hrs?|h)\b", "hours"), (r"(\d+)[-\s]*(?:minutes?|mins?|min)\b", "minutes")):
+        for match in re.finditer(pattern, text):
+            prefix = text[max(0, match.start()-24):match.start()]
+            suffix = text[match.end():match.end()+20]
+            if re.search(r"\b(?:in|within|after|every)\s*$", prefix):
+                continue
+            if re.search(r"\b(?:at|by|around)\s*$", prefix):
+                continue
+            if unit == "hours" and re.match(r"\s*(?:am|pm|a\.?m\.?|p\.?m\.?)\b", suffix):
+                continue
+            number = float(match.group(1))
+            total = int(number*60) if unit == "hours" else int(number)
+            return max(15, min(480, total))
     if re.search(r"\bполтора\s+час", text):
         return 90
     if re.search(r"\bполчаса\b", text):
@@ -1568,12 +1859,29 @@ def time_is_mentioned(value: str, message: str) -> bool:
 
 
 def relative_shift_minutes(message: str) -> int | None:
-    """Parse an explicit relative move such as «на час позже» or «на 20 минут раньше».
-
-    Returns a signed number of minutes, or None if no unambiguous shift is present.
-    This is intentionally separate from parse_time_from_text: a shift is not a clock time.
-    """
+    """Parse explicit English or Russian relative shifts without confusing them with clock times."""
     text = re.sub(r"\s+", " ", str(message or "").lower().replace("ё", "е")).strip()
+    english = re.search(r"\b(?P<amount>half an hour|half hour|an hour|a hour|one hour|two hours|three hours|\d+(?:[.,]\d+)?\s*(?:hours?|hrs?|h|minutes?|mins?|min))\s+(?P<direction>later|earlier|forward|back|afterwards|sooner)\b", text)
+    if english:
+        amount = english.group("amount")
+        if amount in {"half an hour", "half hour"}:
+            minutes = 30
+        elif amount in {"an hour", "a hour", "one hour"}:
+            minutes = 60
+        elif amount == "two hours":
+            minutes = 120
+        elif amount == "three hours":
+            minutes = 180
+        else:
+            num = re.match(r"(\d+(?:[.,]\d+)?)\s*(.*)", amount)
+            if not num:
+                return None
+            number = float(num.group(1).replace(",", "."))
+            unit = num.group(2)
+            minutes = int(number*60) if unit.startswith(("hour", "hr", "h")) else int(number)
+        if not 1 <= minutes <= 480:
+            return None
+        return minutes if english.group("direction") in {"later", "forward", "afterwards"} else -minutes
     match = re.search(
         r"\b(?:на\s+)?(?P<amount>полчаса|пол\s+часа|полтора\s+часа|"
         r"(?:\d+(?:[.,]\d+)?\s*)?(?:час|часа|часов|ч\b)|"
@@ -1603,8 +1911,34 @@ def relative_shift_minutes(message: str) -> int | None:
 
 
 def parse_time_range_from_text(message: str) -> tuple[str, str] | None:
-    """Parse explicit Russian clock ranges like "с 14:00 до 15:30" or "с 9 до 10"."""
+    """Parse English and Russian time ranges such as "from 2 pm to 3:30 pm"."""
     text = str(message or "").lower().replace("ё", "е")
+    en_range = re.search(
+        r"\b(?:from\s+|between\s+)?(?P<start>\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|noon|midnight)\s*(?:to|until|through|and|[-–])\s*(?P<end>\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|noon|midnight)\b",
+        text)
+    if en_range:
+        def parse_token(token: str, infer_pm: bool = False) -> int | None:
+            token = token.strip()
+            if token == "noon": return 12*60
+            if token == "midnight": return 0
+            m = re.fullmatch(r"(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?", token)
+            if not m: return None
+            hour, minute = int(m.group(1)), int(m.group(2) or 0)
+            marker = (m.group(3) or "").replace(".", "")
+            if minute > 59: return None
+            if marker:
+                if not 1 <= hour <= 12: return None
+                if marker == "pm" and hour != 12: hour += 12
+                if marker == "am" and hour == 12: hour = 0
+            elif infer_pm and 1 <= hour <= 11 and hour < 8:
+                hour += 12
+            if not 0 <= hour <= 23: return None
+            return hour*60+minute
+        start_raw, end_raw = en_range.group("start"), en_range.group("end")
+        start_min = parse_token(start_raw)
+        end_min = parse_token(end_raw, infer_pm=(bool(re.search(r"p\.?m\.?", start_raw)) and not bool(re.search(r"[ap]\.?m\.?", end_raw))))
+        if start_min is not None and end_min is not None and end_min > start_min:
+            return minutes_to_time(start_min), minutes_to_time(end_min)
     match = re.search(
         r"\bс\s*(\d{1,2})(?:[:.](\d{2}))?\s*(?:(?:час(?:а|ов)?)|ч\b)?\s+"
         r"(?:до|по)\s*(\d{1,2})(?:[:.](\d{2}))?\b",
@@ -1624,12 +1958,33 @@ def parse_time_range_from_text(message: str) -> tuple[str, str] | None:
 
 
 def extract_event_title(message: str) -> str:
-    text = message.strip()
-    text = re.sub(r"^(?:пожалуйста[,]?\s*)?(?:добавь|добавить|создай|создать|запиши|записать|запланируй|поставь|назначь|добавь мне)\s*", "", text, flags=re.I)
-    text = re.sub(r"\b(?:сегодня|завтра|послезавтра)\b", " ", text, flags=re.I)
-    text = re.sub(r"\bв\s*\d{1,2}(?:[:.]\d{2})?\b", " ", text, flags=re.I)
+    """Extract the task label while dropping common conversational command framing."""
+    original = str(message or "").strip()
+    if not re.search(r"[\u0400-\u04FF]", original):
+        title = _english_title_from_request(original)
+        if title:
+            return title
+
+    text = re.sub(r"\s+", " ", original).strip()
+    text = re.sub(
+        r"^(?:пожалуйста[,]?\s*)?(?:мне нужно|мне надо|надо|нужно|хочу|не забудь[,]?\s*|"
+        r"добавь(?:\s+мне)?\s+(?:задачу|дело|событие|напоминание)|"
+        r"поставь\s+задачу|создай\s+(?:задачу|событие|напоминание)|"
+        r"запланируй\s+задачу|добавь(?:\s+мне)?|добавить|создай|создать|"
+        r"запиши|записать|запланируй|поставь|назначь|напомни(?:\s+мне)?(?:\s+о том, что)?|"
+        r"сделай\s+напоминание)\s*[:—-]?\s*",
+        "", text, flags=re.I)
+    text = re.sub(r"^(?:задача|задачу|дело|событие|напоминание)\s*[:—-]?\s*", "", text, flags=re.I)
+    text = re.sub(r"\b(?:сегодня|завтра|послезавтра|этим вечером|сегодня вечером)\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:в\s+)?(?:следующ\w*\s+)?(?:понедельник\w*|вторник\w*|сред\w*|четверг\w*|пятниц\w*|суббот\w*|воскресень\w*)\b", " ", text, flags=re.I)
+    text = re.sub(r"\b20\d{2}-\d{2}-\d{2}\b|(?<!\d)\d{1,2}[./-]\d{1,2}(?:[./-]20\d{2})?(?![\d./-])(?!\s*(?:hours?|hrs?|h|minutes?|mins?|min|days?|weeks?|months?|years?|час(?:а|ов)?|ч|минут\w*|мин|a\.?m\.?|p\.?m\.?|am|pm)\b)", " ", text)
+    text = re.sub(r"\b\d{1,2}\s+(?:январ\w*|феврал\w*|март\w*|апрел\w*|ма[йяе]|июн\w*|июл\w*|август\w*|сентябр\w*|октябр\w*|ноябр\w*|декабр\w*)(?:\s+20\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:в|к)\s*\d{1,2}(?:[:.]\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\bс\s*\d{1,2}(?:[:.]\d{2})?\s+до\s*\d{1,2}(?:[:.]\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\bчерез\s+\d+\s+дн\w*\b|\bчерез\s+(?:\d+\s+|одну\s+)?недел\w*\b|\bна\s+следующ\w*\s+недел\w*\b", " ", text, flags=re.I)
     text = re.sub(r"\bна\s*(?:полтора|пол)\s*час(?:а|ов)?\b", " ", text, flags=re.I)
     text = re.sub(r"\bна\s*\d+(?:[.,]\d+)?\s*(?:час(?:а|ов)?|ч\b|минут(?:у|ы)?|мин\b)\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:полтора|пол)\s*час(?:а|ов)?\b|\b\d+(?:[.,]\d+)?\s*(?:час(?:а|ов)?|ч\b|минут\w*|мин\b)\b", " ", text, flags=re.I)
     text = re.sub(r"\b(?:сроч\w*|важн\w*|критич\w*|обычн\w*|низкий приоритет|высокий приоритет|средний приоритет)\b", " ", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" ,.!?—-:")
     return (text[:1].upper() + text[1:]) if text else "Новая задача"
@@ -1714,12 +2069,117 @@ def priority_label(value: Any) -> str:
 
 
 def date_from_message(message: str, selected_date: str) -> str:
-    """Parse common Russian calendar references without depending on the LLM."""
-    text = message.lower().replace("ё", "е")
+    """Parse English and Russian relative/absolute dates without depending on the LLM."""
+    text = str(message or "").lower().replace("ё", "е")
     today = dt.date.fromisoformat(now_date())
     explicit = re.search(r"\b(20\d{2}-\d{2}-\d{2})\b", text)
     if explicit:
-        return parse_date(explicit.group(1))
+        try:
+            return parse_date(explicit.group(1))
+        except ValueError:
+            return selected_date
+    if re.search(r"\bday\s+after\s+tomorrow\b", text):
+        return (today + dt.timedelta(days=2)).isoformat()
+    if re.search(r"\b(?:tomorrow|tonight)\b", text):
+        return (today + dt.timedelta(days=1)).isoformat() if "tomorrow" in text else today.isoformat()
+    if re.search(r"\btoday\b", text):
+        return today.isoformat()
+    english_days = re.search(r"\bin\s+(\d+)\s+days?\b", text)
+    if english_days:
+        return (today + dt.timedelta(days=int(english_days.group(1)))).isoformat()
+    english_weeks = re.search(r"\bin\s+(?:(\d+|a|an|one|two|three|four|five|six|seven)\s+)?weeks?\b", text)
+    if english_weeks:
+        words = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7}
+        token = english_weeks.group(1) or "one"
+        count = int(token) if token.isdigit() else words[token]
+        return (today + dt.timedelta(days=7 * count)).isoformat()
+    month_map = {
+        "jan": 1, "january": 1, "feb": 2, "february": 2, "mar": 3, "march": 3,
+        "apr": 4, "april": 4, "may": 5, "jun": 6, "june": 6, "jul": 7, "july": 7,
+        "aug": 8, "august": 8, "sep": 9, "sept": 9, "september": 9, "oct": 10, "october": 10,
+        "nov": 11, "november": 11, "dec": 12, "december": 12,
+    }
+    month_names = r"jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?"
+    month_match = re.search(rf"\b(?P<month>{month_names})\s+(?P<day>\d{{1,2}})(?:,?\s+(?P<year>20\d{{2}}))?\b", text, re.I)
+    if not month_match:
+        month_match = re.search(rf"\b(?P<day>\d{{1,2}})\s+(?P<month>{month_names})(?:\s+(?P<year>20\d{{2}}))?\b", text, re.I)
+    if month_match:
+        month_token = month_match.group("month").lower()
+        month = month_map.get(month_token, month_map.get(month_token[:3]))
+        day_num = int(month_match.group("day"))
+        year = int(month_match.group("year") or today.year)
+        try:
+            parsed = dt.date(year, month, day_num)
+        except ValueError:
+            return selected_date
+        if not month_match.group("year") and parsed < today:
+            parsed = dt.date(year + 1, month, day_num)
+        return parsed.isoformat()
+
+    # Common European/Russian numeric dates: 28.10, 28/10/2026, 28-10-2026.
+    numeric_date_text = _mask_dot_clock_expressions(text)
+    numeric_date = re.search(
+        r"(?<!\d)(?P<day>\d{1,2})[./-](?P<month>\d{1,2})"
+        r"(?:[./-](?P<year>20\d{2}))?(?![\d./-])"
+        r"(?!\s*(?:hours?|hrs?|h|minutes?|mins?|min|days?|weeks?|months?|years?|час(?:а|ов)?|ч|минут\w*|мин|a\.?m\.?|p\.?m\.?|am|pm)\b)", numeric_date_text)
+    if numeric_date:
+        day_num, month_num = int(numeric_date.group("day")), int(numeric_date.group("month"))
+        year = int(numeric_date.group("year") or today.year)
+        try:
+            parsed = dt.date(year, month_num, day_num)
+        except ValueError:
+            return selected_date
+        if not numeric_date.group("year") and parsed < today:
+            try:
+                parsed = dt.date(year + 1, month_num, day_num)
+            except ValueError:
+                return selected_date
+        return parsed.isoformat()
+
+    russian_months = {
+        "января": 1, "январь": 1, "январе": 1,
+        "февраля": 2, "февраль": 2, "феврале": 2,
+        "марта": 3, "март": 3, "марте": 3,
+        "апреля": 4, "апрель": 4, "апреле": 4,
+        "мая": 5, "май": 5, "мае": 5,
+        "июня": 6, "июнь": 6, "июне": 6,
+        "июля": 7, "июль": 7, "июле": 7,
+        "августа": 8, "август": 8, "августе": 8,
+        "сентября": 9, "сентябрь": 9, "сентябре": 9,
+        "октября": 10, "октябрь": 10, "октябре": 10,
+        "ноября": 11, "ноябрь": 11, "ноябре": 11,
+        "декабря": 12, "декабрь": 12, "декабре": 12,
+    }
+    russian_month_pattern = "|".join(sorted(russian_months, key=len, reverse=True))
+    ru_month_match = re.search(
+        rf"(?<!\w)(?P<day>\d{{1,2}})\s+(?P<month>{russian_month_pattern})"
+        rf"(?:\s+(?P<year>20\d{{2}}))?(?!\w)", text)
+    if ru_month_match:
+        day_num = int(ru_month_match.group("day"))
+        month_num = russian_months[ru_month_match.group("month")]
+        year = int(ru_month_match.group("year") or today.year)
+        try:
+            parsed = dt.date(year, month_num, day_num)
+        except ValueError:
+            return selected_date
+        if not ru_month_match.group("year") and parsed < today:
+            try:
+                parsed = dt.date(year + 1, month_num, day_num)
+            except ValueError:
+                return selected_date
+        return parsed.isoformat()
+
+    en_weekday = re.search(r"\b(?P<next>next\s+)?(?P<weekday>monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", text)
+    if en_weekday:
+        weekdays = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
+        target_wd = weekdays[en_weekday.group("weekday")]
+        if re.search(r"\bnext\s+week\b", text):
+            days_to_next_monday = 7 - today.weekday()
+            return (today + dt.timedelta(days=days_to_next_monday + target_wd)).isoformat()
+        delta = (target_wd - today.weekday()) % 7
+        if en_weekday.group("next") and delta == 0:
+            delta = 7
+        return (today + dt.timedelta(days=delta)).isoformat()
     if "послезавтра" in text:
         return (today + dt.timedelta(days=2)).isoformat()
     if "завтра" in text:
@@ -1744,11 +2204,16 @@ def date_from_message(message: str, selected_date: str) -> str:
         (6, r"воскресень\w*|вс\b"),
     ]
     explicit_next_week = bool(re.search(r"\bследующ\w*\s+недел\w*\b", text))
+    explicit_next_weekday = bool(re.search(r"\bследующ\w*\s+(?:понедельник\w*|вторник\w*|сред\w*|четверг\w*|пятниц\w*|суббот\w*|воскресень\w*)", text))
     for weekday, pattern in weekday_patterns:
         if re.search(rf"\b(?:{pattern})", text):
-            delta = (weekday - today.weekday()) % 7
             if explicit_next_week:
-                delta = delta + 7 if delta else 7
+                # Anchor to next week's Monday, then add the target weekday offset.
+                delta = (7 - today.weekday()) + weekday
+            else:
+                delta = (weekday - today.weekday()) % 7
+                if explicit_next_weekday and delta == 0:
+                    delta = 7
             return (today + dt.timedelta(days=delta)).isoformat()
     return selected_date
 
@@ -2025,9 +2490,7 @@ def fallback_edit_event(message: str, events: list[dict[str, Any]]) -> dict[str,
 
     # Explicit date/time edits and moves. A time-only command preserves the event date;
     # a date-only command preserves the event clock time and duration.
-    explicit_date_value = bool(re.search(
-        r"\b(?:сегодня|завтра|послезавтра|понедельник\w*|вторник\w*|среда|среды|среду|среде|четверг\w*|пятниц\w*|суббот\w*|воскресень\w*|пн|вт|ср|чт|пт|сб|вс)\b|\b20\d{2}-\d{2}-\d{2}\b|\bчерез\s+(?:\d+\s+дн\w*|(?:\d+\s+)?недел\w*)\b", text
-    ))
+    explicit_date_value = explicit_date_in_text(message)
     date_field_intent = bool(re.search(r"\b(?:дату|дата|на дату|число)\b", text))
     temporal_intent = bool(re.search(r"\b(?:перенеси|перемести|передвинь|сдвинь|поменяй время|измени время|поменяй дату|измени дату|измени время начала|измени время окончания)\b", text))
     time_requested = bool(re.search(r"\b(?:время|начало|окончание|заканчив\w*|на другое время|на \d{1,2}[:.]?\d{0,2})\b", text)) or temporal_intent
@@ -2092,7 +2555,392 @@ def fallback_edit_event(message: str, events: list[dict[str, Any]]) -> dict[str,
     return None
 
 
+def _english_title_from_request(message: str) -> str:
+    """Extract an event title from a common English calendar command."""
+    text = re.sub(r"\s+", " ", str(message or "")).strip()
+    text = re.sub(r"^(?:(?:please|can you|could you|would you)\s+|don\'t forget to\s+|do not forget to\s+|i need (?:you )?to\s+|i want to\s+|i have to\s+)+", "", text, flags=re.I)
+    text = re.sub(r"^(?:add|create|schedule|plan|put|place|block|book|remind me to|make time for|add to my calendar|put on my calendar)\b", "", text, flags=re.I).strip()
+    text = re.sub(r"^(?:a\s+)?time\s+for\s+", "", text, flags=re.I)
+    text = re.sub(r"^(?:(?:a|an|the)\s+)?(?:calendar\s+event|time\s+block|task|event|reminder)(?:\s+(?:to|for))?\s*[:\-]?\s*", "", text, flags=re.I)
+    # Remove dates before the clock regex below; otherwise "on 3 November" can
+    # be misread as a time and leave a stray month in the title.
+    text = re.sub(r"\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+20\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:\s+20\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b20\d{2}-\d{2}-\d{2}\b|(?<!\d)\d{1,2}[./-]\d{1,2}(?:[./-]20\d{2})?(?![\d./-])(?!\s*(?:hours?|hrs?|h|minutes?|mins?|min|days?|weeks?|months?|years?|час(?:а|ов)?|ч|минут\w*|мин|a\.?m\.?|p\.?m\.?|am|pm)\b)", " ", text)
+    # Remove explicit time ranges before individual times.
+    text = re.sub(r"\b(?:from\s+)?\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?\s+(?:to|until|through|[-–])\s+\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:at|by|around|about|on)\s+(?:\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)?|\d{1,2}:\d{2}|noon|midnight)\b", " ", text, flags=re.I)
+    text = re.sub(r"\b\d{1,2}:\d{2}\b", " ", text)
+    text = re.sub(r"\b\d{1,2}\s*(?:a\.?m\.?|p\.?m\.?)\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:today|tomorrow|tonight|day after tomorrow|next week|this week|next month|this month|next monday|next tuesday|next wednesday|next thursday|next friday|next saturday|next sunday|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", " ", text, flags=re.I)
+    text = re.sub(r"\bin\s+\d+\s+days?\b|\bin\s+(?:one|two|three|four|five|six|seven)\s+weeks?\b|\bin\s+\d+\s+weeks?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+20\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:\s+20\d{2})?\b", " ", text, flags=re.I)
+    text = re.sub(r"\b20\d{2}-\d{2}-\d{2}\b", " ", text)
+    text = re.sub(r"(?<!\d)\d{1,2}[./-]\d{1,2}(?:[./-]20\d{2})?(?![\d./-])(?!\s*(?:hours?|hrs?|h|minutes?|mins?|min|days?|weeks?|months?|years?|час(?:а|ов)?|ч|минут\w*|мин|a\.?m\.?|p\.?m\.?|am|pm)\b)", " ", text)
+    text = re.sub(r"\b(?:(?:for|in|within)\s+)?(?:half an hour|half hour|an hour and a half|one and a half hours|one hour and a half|\d+(?:[.,]\d+)?[-\s]*(?:hours?|hrs?|h)(?:\s+and\s+\d+[-\s]*(?:minutes?|mins?|min))?|\d+[-\s]*(?:minutes?|mins?|min))\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:urgent|critical|asap|high priority|low priority|medium priority|normal priority|important|optional|not urgent)\b", " ", text, flags=re.I)
+    # Remove calendar-routing phrases rather than leaking them into the event title.
+    text = re.sub(r"\b(?:on|in|to)\s+my\s+calendar\b", " ", text, flags=re.I)
+    text = re.sub(r"\b(?:please|tomorrow|today|tonight|on|at|for|by|priority|important|urgent)\b", " ", text, flags=re.I)
+    text = re.sub(r"\s+", " ", text).strip(" ,.!?;:—–-\"'“”")
+    text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.I)
+    text = re.sub(r"^(?:to|about|that)\s+", "", text, flags=re.I)
+    return (text[:1].upper() + text[1:])[:180] if text else ""
+
+
+def _english_event_target(message: str, events: list[dict[str, Any]], selected_date: str | None = None) -> tuple[dict[str, Any] | None, str, list[dict[str, Any]]]:
+    """Resolve a named event conservatively; exact title mentions outrank guesses."""
+    text = str(message or "").lower()
+    quoted = re.findall(r'["“”\']([^"“”\']{1,180})["“”\']', str(message or ""))
+    candidate = quoted[0].strip() if quoted else ""
+    if candidate:
+        matches = find_event_matches(candidate, events, None)
+    else:
+        mentioned = [event for event in events if str(event.get("title") or "").strip() and str(event.get("title") or "").lower() in text]
+        if selected_date and len(mentioned) > 1:
+            same_day = [event for event in mentioned if event.get("date") == selected_date]
+            if len(same_day) == 1:
+                mentioned = same_day
+        if len(mentioned) == 1:
+            return mentioned[0], str(mentioned[0].get("title") or ""), mentioned
+        if mentioned:
+            return None, str(mentioned[0].get("title") or ""), mentioned
+        # Strip action words and known temporal/field tails, then use fuzzy matching only
+        # if it produces one unambiguous event.
+        candidate = re.sub(
+            r"^(?:please\s+)?(?:can you\s+|could you\s+|i want to\s+|i need you to\s+)?"
+            r"(?:move|reschedule|postpone|bring forward|delete|remove|cancel|mark|complete|finish|rename|edit|change|update|set priority of|make)\s+",
+            "", str(message or ""), flags=re.I).strip()
+        candidate = re.sub(r"^(?:the\s+)?(?:task|event|meeting|appointment|reminder)\s+", "", candidate, flags=re.I)
+        candidate = re.split(
+            r"\s+(?:to\s+(?:today|tomorrow|tonight|next\s+week|next\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)|\d{1,2}(?::\d{2})?|\d{1,2}\s*(?:a\.?m\.?|p\.?m\.?))|"
+            r"on\s+(?:today|tomorrow|next\s+|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|"
+            r"at\s+\d|by\s+\d|as\s+(?:done|completed|urgent|high|low)|"
+            r"with\s+(?:high|low|medium|urgent)\s+priority)", candidate, maxsplit=1, flags=re.I)[0]
+        candidate = candidate.strip(" .,!?:;\"'“”")
+        matches = find_event_matches(candidate, events, None) if candidate else []
+    if len(matches) == 1:
+        return matches[0], candidate, matches
+    return None, candidate, matches
+
+
+def _rule_based_agent_english(message: str, selected_date: str) -> dict[str, Any]:
+    """English-first fallback agent with conservative writes and calendar-aware reasoning."""
+    raw_message = str(message or "").strip()
+    text = re.sub(r"\s+", " ", raw_message.lower()).strip()
+    events = get_events()
+    has_date = explicit_date_in_text(raw_message)
+
+    def answer(reply: str, action: str = "none", **extra: Any) -> dict[str, Any]:
+        return {"reply": reply, "action": action, **extra}
+
+    explicit_iso = re.search(r"\b(20\d{2}-\d{2}-\d{2})\b", raw_message)
+    if explicit_iso:
+        try:
+            dt.date.fromisoformat(explicit_iso.group(1))
+        except ValueError:
+            return answer(f"{explicit_iso.group(1)} is not a valid calendar date. Please provide a valid date in YYYY-MM-DD format. I have not changed anything.", "ask_clarification")
+    try:
+        target_date = date_from_message(raw_message, selected_date) if has_date else parse_date(selected_date)
+    except ValueError:
+        return answer("I could not understand that date. Please provide a valid date in YYYY-MM-DD format. I have not changed anything.", "ask_clarification")
+
+    if not text:
+        return answer("Tell me what you want to plan, change, or review.", "ask_clarification")
+
+    # Advice, hypothetical, negated, and conditional requests must never mutate the calendar.
+    has_action_word = bool(re.search(r"\b(?:add|create|schedule|move|reschedule|postpone|delete|remove|cancel|rename|edit|change|update|complete|mark|set priority|optimi[sz]e)\b", text))
+    if has_action_word and re.search(r"\b(?:don't|do not|never|please don't|leave it|keep it)\b", text):
+        return answer("Understood. I have not changed the calendar because you asked me not to.")
+    recommendation_question = bool(re.search(r"\bwhat should i (?:do|prioritize|work on|start with|focus on)\b", text))
+    advice_question = bool(re.search(r"\b(?:what if|should i|would it be better|is it better to|is it worth|do you think i should|could i|can i)\b", text))
+    if advice_question and not recommendation_question:
+        day_events = sorted([e for e in events if e.get("date") == target_date and e.get("status") != "completed"], key=lambda e: e.get("start", ""))
+        if day_events:
+            lines = [f"Your schedule for {target_date} has {len(day_events)} planned item(s)."]
+            lines.extend(f"• {e.get('start')}–{e.get('end')} — {e.get('title')} ({priority_value(e.get('priority'))} priority)" for e in day_events[:6])
+            lines.append("I have not changed anything. Tell me explicitly which change you want to apply.")
+            return answer("\n".join(lines), "analyze_schedule")
+        return answer("I can compare the options, but this message asks for advice rather than a calendar change. Nothing has been changed.", "analyze_schedule")
+
+    if user_requests_real_world_booking(raw_message):
+        return answer("I can manage your calendar, but I cannot contact a venue or make a real-world booking. Please confirm the appointment or reservation directly first; then give me the confirmed date and time to add as a protected calendar block.", "ask_clarification")
+
+    # Safe optimization is a proposal only; applying it is a separate user action.
+    if re.search(r"\b(?:optimi[sz]e|improve|rebalance|reorganize|reorganise)\b.{0,50}\b(?:schedule|calendar|day|plan)\b|\b(?:i am overloaded|i'm overloaded|too many things|i can't fit everything|help me fit everything)\b", text):
+        proposal = optimize_day(target_date)
+        if proposal:
+            return answer(f"I prepared an optimization proposal for {target_date}. Fixed commitments and external bookings are protected. Review the proposed changes and apply them only if they work for you.", "optimize_schedule", proposal=proposal)
+        day_events = sorted([e for e in events if e.get("date") == target_date and e.get("status") != "completed"], key=lambda e: e.get("start", ""))
+        if not day_events:
+            return answer(f"There are no planned events on {target_date} to optimize. Add tasks or choose another date.")
+        return answer("I could not find a safe optimization that improves this day. Fixed meetings and external bookings will not be moved automatically.", "optimize_schedule", proposal=[])
+
+    # Free-time search is read-only. It never creates a block unless the user explicitly asks to schedule it.
+    if re.search(r"\b(?:free time|free slot|free window|available slot|availability|when am i free|when do i have time|find time|find a slot|check if .*? free)\b", text):
+        duration = explicit_duration_from_text(raw_message) or (parse_duration(raw_message) if re.search(r"\b(?:hours?|hrs?|minutes?|mins?|min|half an hour)\b", text) else 60)
+        slots = find_free_slots(target_date, duration, events, 8)
+        if not slots:
+            return answer(f"I could not find a {duration}-minute free slot on {target_date} within the working window of 07:00–22:00. I have not changed the calendar.", "find_free_time")
+        slot_lines = [f"• {slot['start']}–{slot['end']}" for slot in slots]
+        return answer(f"Available {duration}-minute windows on {target_date}:\n" + "\n".join(slot_lines), "find_free_time", slots=slots)
+
+    # Read and summarize the day before interpreting less-specific action words.
+    if re.search(r"\b(?:what(?:'s| is) on my schedule|show (?:me )?(?:my )?(?:calendar|schedule|agenda)|my schedule|today's agenda|list (?:my )?(?:tasks|events)|what do i have|what is planned|what have i got|show my day|calendar for)\b", text):
+        day_events = sorted([e for e in events if e.get("date") == target_date], key=lambda e: e.get("start", ""))
+        if not day_events:
+            return answer(f"There are no calendar entries for {target_date}.")
+        lines = [f"{e.get('start')}–{e.get('end')} — {e.get('title')} · {priority_value(e.get('priority'))} priority" + (" · fixed" if not event_is_movable(e) else "") for e in day_events[:20]]
+        return answer(f"Your schedule for {target_date}:\n" + "\n".join("• " + line for line in lines))
+
+    if re.search(r"\b(?:what(?:'s| is) next|next event|my next event|what comes next)\b", text):
+        upcoming = sorted([e for e in events if (e.get("date", "") > target_date or (e.get("date") == target_date and e.get("end", "") >= dt.datetime.now().strftime("%H:%M"))) and e.get("status") != "completed"], key=lambda e: (e.get("date", ""), e.get("start", "")))
+        if not upcoming:
+            return answer("I could not find any upcoming planned events.")
+        e = upcoming[0]
+        return answer(f"Your next planned event is {e.get('title')} on {e.get('date')} from {e.get('start')} to {e.get('end')}.")
+
+    if re.search(r"\b(?:what is most important|what should i prioritize|help me prioritize|top priorities|urgent tasks|what should i do first|what should i do (?:today|tomorrow|next)|what should i work on|which task first|priorities for|what is urgent)\b", text):
+        day_events = sorted([e for e in events if e.get("date") == target_date and e.get("status") != "completed"], key=lambda e: (-priority_score(e.get("priority")), e.get("start", "")))
+        if not day_events:
+            return answer(f"There are no planned tasks on {target_date} to prioritize.")
+        lines = []
+        for e in day_events[:8]:
+            mobility = "fixed commitment" if not event_is_movable(e) else "flexible task"
+            lines.append(f"• {e['start']}–{e['end']} — {e['title']} ({priority_value(e.get('priority'))}; {mobility})")
+        return answer("Recommended order based on priority and scheduling constraints:\n" + "\n".join(lines))
+
+    explicit_review_request = bool(re.search(r"\breview\s+(?:(?:my|the|today's)\s+)?(?:schedule|calendar|agenda|day|workload|plan)\b", text))
+    analysis_request = bool(re.search(r"\b(?:analy[sz]e|assess|am i overbooked|is my schedule realistic|what can be moved|what could i move|workload|too busy|overloaded)\b", text)) or explicit_review_request
+    if analysis_request:
+        # Do not mistake words inside a task title (e.g. "review the report") for
+        # a request to analyze the whole calendar. Explicit action handlers run below.
+        direct_command = bool(re.search(r"^\s*(?:please\s+)?(?:(?:can|could) you\s+|i want to\s+|i need you to\s+)?(?:add|create|schedule|plan|put|place|block|remind|move|reschedule|postpone|shift|delete|remove|cancel|rename|retitle|edit|change|update|complete|mark|set|make|book)\b", text))
+        if not direct_command:
+            day_events = sorted([e for e in events if e.get("date") == target_date and e.get("status") != "completed"], key=lambda e: e.get("start", ""))
+            if not day_events:
+                return answer(f"There are no planned items on {target_date} to analyze.", "analyze_schedule")
+            total = sum(max(0, duration_of(e)) for e in day_events)
+            fixed = [e for e in day_events if not event_is_movable(e)]
+            movable = sorted([e for e in day_events if event_is_movable(e)], key=lambda e: (priority_score(e.get("priority")), e.get("start", "")))
+            lines = [f"Scheduled workload: {total // 60}h {total % 60}m across {len(day_events)} item(s). Fixed commitments: {len(fixed)}; flexible tasks: {len(movable)}."]
+            if movable:
+                lines.append("Flexible items to consider moving first (no changes made):")
+                lines.extend(f"• {e['start']}–{e['end']} — {e['title']} ({priority_value(e.get('priority'))} priority)" for e in movable[:5])
+            if fixed:
+                lines.append("These commitments will not be moved automatically:")
+                lines.extend(f"• {e['start']}–{e['end']} — {e['title']}" for e in fixed[:5])
+            return answer("\n".join(lines), "analyze_schedule")
+
+    # Mark a task complete. External appointments require proof that the visit occurred.
+    if re.search(r"\b(?:mark|set)\b.{0,80}\b(?:done|complete|completed|finished)\b|\b(?:mark as done|mark completed|complete task|finish task)\b", text):
+        found, candidate, matches = _english_event_target(raw_message, events, selected_date)
+        if not found:
+            if matches:
+                detail = "\n".join(f"• {e['date']} {e['start']}–{e['end']} — {e['title']}" for e in matches[:8])
+                return answer("I found multiple matching entries. Which one should I mark complete?\n" + detail, "ask_clarification", matches=matches[:8])
+            return answer("Which exact task should I mark complete? Include its calendar title or date.", "ask_clarification")
+        visit_happened = bool(re.search(r"\b(?:appointment (?:happened|took place|is over)|i attended|visit completed|i went to the appointment|appointment has passed)\b", text))
+        if event_is_external_booking(found) and not visit_happened:
+            return answer("This appears to be an external appointment or reservation. I will not mark the visit complete based on an assumption. Confirm that it actually took place, then ask me again.", "ask_clarification")
+        updated = update_event(found["id"], {"status": "completed"})
+        return answer(f"Marked “{updated['title']}” as completed.", "mark_completed", event=updated)
+
+    # Delete only a uniquely identified entry; deleting a calendar block is not cancelling the real booking.
+    if re.search(r"\b(?:delete|remove|cancel)\b", text) and not re.search(r"\b(?:cancel my subscription|cancel this request)\b", text):
+        found, candidate, matches = _english_event_target(raw_message, events, selected_date)
+        if not found:
+            if matches:
+                detail = "\n".join(f"• {e['date']} {e['start']}–{e['end']} — {e['title']}" for e in matches[:8])
+                return answer("I found multiple matching entries and will not guess. Which one should I remove?\n" + detail, "ask_clarification", matches=matches[:8])
+            return answer("Which exact calendar entry should I remove? Please include its title.", "ask_clarification")
+        if event_is_external_booking(found) and not external_cancellation_confirmed(raw_message):
+            return answer("This is an external appointment or reservation. Removing its calendar block will not cancel the real booking. Cancel it with the provider first, then tell me it has already been cancelled and ask me to remove only the calendar entry.", "ask_clarification")
+        deleted = delete_event(found["id"], confirm_calendar_only=event_is_external_booking(found))
+        return answer(f"Removed “{deleted['title']}” from your calendar.", "delete_event", deleted_id=deleted["id"])
+
+    # Move/reschedule: preserve the current duration and protect external commitments.
+    if re.search(r"\b(?:move|reschedule|postpone|bring forward|shift)\b", text):
+        found, candidate, matches = _english_event_target(raw_message, events, selected_date)
+        if not found:
+            if matches:
+                detail = "\n".join(f"• {e['date']} {e['start']}–{e['end']} — {e['title']}" for e in matches[:8])
+                return answer("Several entries match. Which one should I move?\n" + detail, "ask_clarification", matches=matches[:8])
+            return answer("Which calendar entry should I move, and to what date or time? I have not changed anything.", "ask_clarification")
+        if event_is_external_booking(found) and not external_reschedule_confirmed(raw_message):
+            return answer("This appears to be an external appointment or reservation. I cannot reschedule it with the provider. Confirm the new time directly with the provider first; then I can update only the calendar block.", "ask_clarification")
+        patch: dict[str, Any] = {}
+        if has_date:
+            patch["date"] = target_date
+        time_range = parse_time_range_from_text(raw_message)
+        requested_clock = parse_time_from_text(raw_message)
+        shift = relative_shift_minutes(raw_message)
+        end_only = bool(re.search(r"\b(?:end at|finish at|until|ending at|end time|by)\b", text)) and requested_clock is not None
+        dur = duration_of(found)
+        try:
+            if time_range:
+                patch["start"], patch["end"] = time_range
+            elif shift is not None and requested_clock is None:
+                new_start = time_to_minutes(found["start"]) + shift
+                patch["start"] = minutes_to_time(new_start)
+                patch["end"] = minutes_to_time(new_start + dur)
+            elif requested_clock is not None:
+                if end_only:
+                    new_end = time_to_minutes(requested_clock)
+                    patch["start"] = minutes_to_time(new_end - dur)
+                    patch["end"] = requested_clock
+                else:
+                    patch["start"] = requested_clock
+                    patch["end"] = minutes_to_time(time_to_minutes(requested_clock) + dur)
+        except ValueError:
+            return answer("That time would place the event outside the day. Please choose another time; nothing was changed.", "ask_clarification")
+        if not patch:
+            return answer("Please specify a new date, time, time range, or relative shift such as “30 minutes later.” I have not changed anything.", "ask_clarification")
+        patch["date"] = parse_date(patch.get("date"), found["date"])
+        if event_is_external_booking(found):
+            patch["confirm_calendar_only"] = True
+        try:
+            candidate_event = normalize_event({**found, **patch, "id": found["id"]}, found["date"])
+        except ValueError as exc:
+            return answer(f"I could not validate that move: {exc}", "ask_clarification")
+        conflict = has_conflict(candidate_event, events, skip_id=found["id"])
+        if conflict:
+            return answer(f"I did not move “{found['title']}” because {conflict.get('title')} already occupies {conflict.get('start')}–{conflict.get('end')} on {conflict.get('date')}. Choose another slot.", "ask_clarification", conflict=conflict)
+        try:
+            updated = update_event(found["id"], patch)
+        except (ValueError, KeyError) as exc:
+            return answer(f"I could not move the entry: {exc}", "ask_clarification")
+        note = " Only the calendar block was changed; the real-world booking was not changed." if event_is_external_booking(found) else ""
+        return answer(f"Moved “{updated['title']}” to {updated['date']} from {updated['start']} to {updated['end']}.{note}", "move_event", event=updated)
+
+    # Priority changes require an explicit update verb; merely creating a "high-priority task"
+    # must not be misinterpreted as an edit to an existing calendar entry.
+    priority_change_intent = bool(
+        re.search(r"\b(?:change|set|update|raise|lower|increase|decrease|adjust)\s+(?:the\s+)?priority\b", text)
+        or re.search(r"\bpriority\s+(?:of|for)\b", text)
+        or re.search(r"\bmake\s+.+?\s+(?:urgent|critical|asap|important|high priority|low priority|medium priority)\b", text)
+        or re.search(r"\bset\s+.+?\s+to\s+(?:urgent|critical|asap|high|low|medium)\b", text)
+    )
+    if priority_change_intent:
+        found, candidate, matches = _english_event_target(raw_message, events, selected_date)
+        if not found:
+            return answer("Which exact calendar entry should have its priority changed? Include its title.", "ask_clarification")
+        if re.search(r"\b(?:urgent|critical|asap)\b", text):
+            level = "urgent"
+        elif re.search(r"\b(?:high|important)\b", text):
+            level = "high"
+        elif re.search(r"\b(?:low|optional|not important)\b", text):
+            level = "low"
+        elif re.search(r"\b(?:medium|normal)\b", text):
+            level = "medium"
+        else:
+            return answer("What priority should I use: urgent, high, medium, or low? Nothing has been changed.", "ask_clarification")
+        updated = update_event(found["id"], {"priority": level})
+        return answer(f"Changed the priority of “{updated['title']}” to {level}. Its date and time are unchanged.", "change_priority", event=updated)
+
+    # Update notes/description without changing the event's schedule or priority.
+    description_match = re.search(
+        r"\b(?:set|change|update|edit)\s+(?:the\s+)?(?:description|notes?)\s+(?:of|for)\s+(.+?)\s+\bto\s+(.+)$",
+        raw_message, flags=re.I,
+    )
+    if description_match:
+        target_phrase = description_match.group(1).strip().strip('"“”\'')
+        new_description = description_match.group(2).strip().strip('"“”\'')
+        found, _, matches = _english_event_target(target_phrase, events, selected_date)
+        if not found:
+            return answer("I could not identify one exact calendar entry for this notes update. Please quote its title.", "ask_clarification")
+        updated = update_event(found["id"], {"description": new_description[:1000]})
+        return answer(f"Updated the notes for “{updated['title']}”. Its schedule and priority are unchanged.", "edit_event", event=updated, updated_fields=["description"])
+
+    # Rename only when both the old and new title are identifiable.
+    if re.search(r"\b(?:rename|retitle|change the title of|rename the task)\b", text):
+        quoted = re.findall(r'["“”\']([^"“”\']{1,180})["“”\']', raw_message)
+        if len(quoted) >= 2:
+            found, _, _matches = _english_event_target(quoted[0], events, selected_date)
+            new_title = quoted[1].strip()
+        else:
+            before_after = re.search(r"\brename\s+(?:the\s+)?(?:task|event)?\s*(.+?)\s+to\s+(.+)$", raw_message, flags=re.I)
+            if not before_after:
+                return answer("Please provide both the current title and the new title, preferably in quotes. I have not changed anything.", "ask_clarification")
+            found, _, _matches = _english_event_target(before_after.group(1), events, selected_date)
+            new_title = re.sub(r"\s+(?:tomorrow|today|next\s+\w+|at\s+\d.*)$", "", before_after.group(2), flags=re.I).strip(" .,!?")
+        if not found or not new_title:
+            return answer("I could not identify one exact event and a non-empty new title. Please clarify both.", "ask_clarification")
+        updated = update_event(found["id"], {"title": new_title[:180]})
+        return answer(f"Renamed the entry to “{updated['title']}”. Its schedule and priority were preserved.", "edit_event", event=updated, updated_fields=["title"])
+
+    # Create a new task only with explicit intent. Missing time is clarified instead of fabricated.
+    create_intent = bool(re.search(
+        r"\b(?:add|create|schedule|plan|put|place|block time for|make time for|remind me to|add to my calendar|put on my calendar|i need to schedule|i want to schedule|book (?:a )?time block for)\b", text))
+    if create_intent:
+        if re.search(r"\b(?:should i|what if|don't|do not|never)\b", text):
+            return answer("I have not added anything because this sounds like a question or restriction rather than a direct instruction.")
+        title = _english_title_from_request(raw_message)
+        if not title:
+            return answer("What task or event would you like me to add? Please include a short title.", "ask_clarification")
+        time_range = parse_time_range_from_text(raw_message)
+        start = time_range[0] if time_range else parse_time_from_text(raw_message)
+        explicit_duration = explicit_duration_from_text(raw_message)
+        duration = (time_to_minutes(time_range[1]) - time_to_minutes(time_range[0])) if time_range else (explicit_duration or 60)
+        priority = explicit_priority_from_text(raw_message) or "medium"
+        category = "task"
+        fixed = False
+        if re.search(r"\b(?:meeting|stand[- ]?up|sync|interview|conference|call with)\b", title.lower()):
+            category, fixed = "meeting", True
+        if re.search(r"\b(?:deadline|due date|submit by|deliver by)\b", text):
+            category, fixed = "deadline", True
+        if re.search(r"\b(?:appointment with|appointment at|dentist appointment|doctor appointment|medical appointment|hair appointment|salon appointment|restaurant reservation|hotel reservation|flight reservation|train ticket)\b", title.lower()):
+            category, fixed = "appointment", True
+        if category == "deadline" and start is None and time_range is None:
+            return answer(f"I can add “{title}” as a deadline, but you have not specified the deadline time. What time is it due? I have not added it yet.", "ask_clarification")
+        if not start and not wants_auto_schedule(raw_message):
+            date_note = f" on {target_date}" if has_date else f" on the selected date ({target_date})"
+            return answer(f"I understood the task “{title}”{date_note}, but no start time was specified. Tell me the time, or ask me to find a free slot. I have not added anything yet.", "ask_clarification")
+        candidate_raw = {
+            "title": title, "date": target_date, "start": start or "09:00",
+            "end": time_range[1] if time_range else minutes_to_time(time_to_minutes(start or "09:00") + duration),
+            "duration_minutes": duration, "priority": priority, "category": category,
+            "description": "", "fixed": fixed, "source": "agent", "status": "planned",
+        }
+        try:
+            candidate = normalize_event(candidate_raw, target_date)
+        except ValueError as exc:
+            return answer(f"I could not validate the event: {exc}", "ask_clarification")
+        if not start:
+            slot = find_slot_across_days(target_date, duration, events)
+            if not slot:
+                return answer("I could not find a free slot in the next two weeks. Try a shorter duration or another date.", "ask_clarification")
+            day, start_value, end_value = slot
+            candidate = normalize_event({**candidate, "date": day, "start": start_value, "end": end_value}, day)
+            choice = {"label": f"Add on {day} from {start_value} to {end_value}", "detail": "This is a proposal; nothing has been added yet.", "execute": {"kind": "create_event", "event": candidate}}
+            return register_agent_choices(f"I found a free slot for “{title}”: {day}, {start_value}–{end_value}. Review and confirm it before I add the task.", [choice])
+        conflict = has_conflict(candidate, events)
+        if conflict:
+            alternate = find_slot_across_days(candidate["date"], duration, events, candidate["end"])
+            choices = []
+            if alternate and not event_is_external_booking(candidate):
+                alt_day, alt_start, alt_end = alternate
+                alt_event = normalize_event({**candidate, "date": alt_day, "start": alt_start, "end": alt_end}, alt_day)
+                choices.append({"label": f"Use {alt_day}, {alt_start}–{alt_end}", "detail": "Existing events will not be moved.", "execute": {"kind": "create_event", "event": alt_event}})
+            if choices:
+                return register_agent_choices(f"The requested time conflicts with “{conflict.get('title')}” ({conflict.get('start')}–{conflict.get('end')}). Nothing has been added. Choose a safe alternative or specify another time.", choices)
+            return answer(f"The requested time conflicts with “{conflict.get('title')}” ({conflict.get('start')}–{conflict.get('end')}). Nothing has been added. Choose another time.", "ask_clarification", conflict=conflict)
+        try:
+            created, _notice = add_event(candidate, candidate["date"], ai=True)
+        except ValueError as exc:
+            return answer(f"I could not add the event: {exc}", "ask_clarification")
+        warning = " This is a calendar block only; no invitation was sent." if category == "meeting" else ""
+        if event_is_external_booking(created):
+            warning = " This is only a protected calendar entry; I did not contact the provider or create a real booking."
+        return answer(f"Added “{created['title']}” on {created['date']} from {created['start']} to {created['end']} ({created['priority']} priority).{warning}", "create_event", event=created)
+
+    return answer("I can help you plan tasks, review your schedule, find free time, set priorities, analyze workload, and suggest safe schedule changes. Tell me what you would like to do.", "none", demo_mode=True)
+
+
 def rule_based_agent(message: str, selected_date: str) -> dict[str, Any]:
+    if not re.search(r"[\u0400-\u04FF]", str(message or "")):
+        return _rule_based_agent_english(message, selected_date)
     """Conservative no-key fallback. It supports common intents without pretending to be an LLM."""
     msg = message.lower().strip()
     events = get_events()
@@ -2184,12 +3032,10 @@ def rule_based_agent(message: str, selected_date: str) -> dict[str, Any]:
         found = matches[0]
         start = parse_time_from_text(message)
         lower_message = message.lower().replace("ё", "е")
-        mentions_date = bool(re.search(
-            r"\b(?:сегодня|завтра|послезавтра|понедельник\w*|вторник\w*|среда|среды|среду|среде|четверг\w*|пятниц\w*|суббот\w*|воскресень\w*|пн|вт|ср|чт|пт|сб|вс)\b|\b20\d{2}-\d{2}-\d{2}\b|\bчерез\s+\d+\s+дн\w*\b|\bчерез\s+(?:одну\s+)?недел\w*\b", lower_message
-        ))
+        mentions_date = explicit_date_in_text(message)
         shift_minutes = relative_shift_minutes(message)
         duration = duration_of(found)
-        end_only = bool(re.search(r"\b(?:заканчив\w*|оканчива\w*|закончить|окончание|до)\b", lower_message)) and start is not None
+        end_only = bool(re.search(r"\b(?:заканчив\w*|оканчива\w*|закончить|окончание|до|end\s+at|finish\s+at|until|ending\s+at|by)\b", lower_message)) and start is not None
         if shift_minutes is not None and start is None:
             old_start = time_to_minutes(found["start"])
             new_start = old_start + shift_minutes
@@ -2279,9 +3125,19 @@ def guard_model_action(action: str, message: str, conversation_history: list[dic
     previous_users = " ".join(item["content"].lower() for item in previous if item["role"] == "user")
     last_assistant = next((item["content"].lower() for item in reversed(previous) if item["role"] == "assistant"), "")
 
+    # English safety rail for cloud-model output. Questions, hypotheticals and negation
+    # must not become writes even if the model labels them as an action.
+    english_action = r"\b(?:add|create|schedule|move|reschedule|postpone|delete|remove|cancel|rename|edit|change|update|complete|mark|set|raise|lower|optimi[sz]e)\b"
+    if re.search(r"\b(?:don't|do not|never|leave .*? alone|keep .*? unchanged)\b", text) and re.search(english_action, text):
+        return {"reply": "Understood. I have not changed the calendar because you asked me not to.", "action": "none"}
+    if action in {"create_event", "create_events", "edit_event", "delete_event", "move_event", "change_priority", "mark_completed"} and re.search(
+        r"\b(?:what if|should i|would it be better|is it worth|do you think i should|can i|could i|how would it look if)\b", text
+    ):
+        return {"reply": "I can compare the options, but this is a question rather than an instruction to change the calendar. Nothing has been changed.", "action": "ask_clarification"}
+
     negations = {
         "create_event": r"\bне\s+(?:надо\s+)?(?:добавля\w*|создава\w*|записыва\w*|вноси\w*|назнача\w*)\b",
-        "create_events": r"\bне\s+(?:надо\s+)?(?:добавля\w*|создава\w*|записыва\w*|вноси\w*|назнача\w*)\b",
+        "create_events": r"\bне\s+(?:надо\s+)?(?:добавля\w*|создава\w*|записыва\w*|вноси\w*|назнача\w*)\b|\b(?:don't|do not|never)\s+(?:add|create|schedule)\b",
         "edit_event": r"\bне\s+(?:надо\s+)?(?:меняй|изменяй|редактируй|переименовывай|переноси|меняй время|трогай)\b",
         "move_event": r"\bне\s+(?:надо\s+)?(?:переноси\w*|перемеща\w*|передвигай|сдвигай|меняй время|двигай)\b",
         "delete_event": r"\bне\s+(?:надо\s+)?(?:удаля\w*|отменя\w*|убирай|стирай|вычёркивай|вычеркивай)\b",
@@ -2305,10 +3161,10 @@ def guard_model_action(action: str, message: str, conversation_history: list[dic
 
     short_yes = bool(re.fullmatch(r"(?:да|да[,]?\s*(?:подтверждаю|делай|переноси|удаляй|отмечай|меняй)|подтверждаю|согласен|согласна)[.! ]*", text, re.I))
     prior_user_actions = {
-        "delete_event": r"\b(?:удали|удалить|убери|отмени|сотри)\b",
-        "move_event": r"\b(?:перенеси|перемести|передвинь|сдвинь|поменяй время)\b",
-        "change_priority": r"\b(?:измени|поменяй|повысить|понизить|сделай).*\b(?:приоритет|важность|срочно|важным)\b",
-        "mark_completed": r"\b(?:отметь|пометь|готово|завершил|выполнил)\b",
+        "delete_event": r"\b(?:удали|удалить|убери|отмени|сотри|delete|remove|cancel)\b",
+        "move_event": r"\b(?:перенеси|перемести|передвинь|сдвинь|поменяй время|move|reschedule|postpone|shift)\b",
+        "change_priority": r"\b(?:измени|поменяй|повысить|понизить|сделай).*\b(?:приоритет|важность|срочно|важным)\b|\b(?:set|change|raise|lower|make)\b.{0,55}\b(?:priority|urgent|important|high|medium|low)\b",
+        "mark_completed": r"\b(?:отметь|пометь|готово|завершил|выполнил|mark|complete|finish|set)\b.{0,60}\b(?:выполн|заверш|done|complete|completed|finished)\w*\b",
     }
     prior_question_context = (
         "?" in last_assistant
@@ -2318,12 +3174,12 @@ def guard_model_action(action: str, message: str, conversation_history: list[dic
     contextual_confirmation = short_yes and prior_question_context
 
     action_markers = {
-        "delete_event": r"\b(?:удали\w*|убери\w*|сотри\w*|вычеркни\w*|отмени\w*)\b",
-        "edit_event": r"\b(?:измени|поменяй|редактируй|обнови|переименуй|назови|добавь описание|измени описание|измени статус|измени тип|поставь.{0,30}(?:приоритет|важность|статус|тип)|сделай выполненной|сделай.{0,25}(?:срочн\w*|важн\w*)|верни в активные|поменяй дату|продли|сократи|перенеси|передвинь|сдвинь|изменить время|поменяй время)\b",
-        "move_event": r"\b(?:перенеси\w*|перемести\w*|передвинь\w*|сдвинь\w*|поменяй время|измени время|на другое время)\b",
-        "change_priority": r"\b(?:измени|поменяй|сделай|повышай|повысить|понизь|понизить|установи|назначь|поставь)\b.{0,55}\b(?:приоритет\w*|важн\w*|срочн\w*|низк\w*|второстепенн\w*)\b|\b(?:повысить важность|понизить важность|изменить важность|изменить приоритет)\b",
-        "mark_completed": r"\b(?:отметь|пометь|считай|завершил|завершила|выполнил|выполнила|сделал|сделала|готово|закончил|закончила)\b.{0,70}\b(?:выполн\w*|заверш\w*|готов\w*|сделан\w*|задач\w*|запис\w*|отч[её]т|проект)\b|\b(?:готово|сделано)\b",
-        "optimize_schedule": r"\b(?:оптимиз\w*|перераспредел\w*|улучш\w*.{0,30}(?:расписание|график)|сделай график лучше|переставь задачи|не успеваю|перегружен|перегружена|слишком много дел)\b",
+        "delete_event": r"\b(?:удали\w*|убери\w*|сотри\w*|вычеркни\w*|отмени\w*|delete|remove|cancel)\b",
+        "edit_event": r"\b(?:измени|поменяй|редактируй|обнови|переименуй|назови|добавь описание|измени описание|измени статус|измени тип|поставь.{0,30}(?:приоритет|важность|статус|тип)|сделай выполненной|сделай.{0,25}(?:срочн\w*|важн\w*)|верни в активные|поменяй дату|продли|сократи|перенеси|передвинь|сдвинь|изменить время|поменяй время|edit|update|rename|retitle|change the title|change the description|change the status|change the type)\b",
+        "move_event": r"\b(?:перенеси\w*|перемести\w*|передвинь\w*|сдвинь\w*|поменяй время|измени время|на другое время|move|reschedule|postpone|shift|bring forward)\b",
+        "change_priority": r"\b(?:измени|поменяй|сделай|повышай|повысить|понизь|понизить|установи|назначь|поставь|set|change|raise|lower|make)\b.{0,65}\b(?:приоритет\w*|важн\w*|срочн\w*|низк\w*|второстепенн\w*|priority|urgent|important|high|medium|low)\b|\b(?:set priority|change priority|make .*? urgent|make .*? important)\b",
+        "mark_completed": r"\b(?:отметь|пометь|считай|завершил|завершила|выполнил|выполнила|сделал|сделала|готово|закончил|закончила|mark|complete|finish|set)\b.{0,70}\b(?:выполн\w*|заверш\w*|готов\w*|сделан\w*|задач\w*|запис\w*|отч[её]т|проект|done|complete|completed|finished)\b|\b(?:готово|сделано)\b",
+        "optimize_schedule": r"\b(?:оптимиз\w*|перераспредел\w*|улучш\w*.{0,30}(?:расписание|график)|сделай график лучше|переставь задачи|не успеваю|перегружен|перегружена|слишком много дел|optimi[sz]e|rebalance|reorganize|reorganise|improve)\b",
     }
     if action in action_markers and not re.search(action_markers[action], text, re.I) and not contextual_move and not contextual_confirmation:
         prompts = {
@@ -2338,7 +3194,7 @@ def guard_model_action(action: str, message: str, conversation_history: list[dic
 
     # Questions and hypotheticals do not authorize a write.
     if action in {"create_event", "create_events", "edit_event", "delete_event", "move_event", "change_priority", "mark_completed"} and re.search(
-        r"\b(?:можно ли|стоит ли|что будет если|что если|как мне|как можно|как лучше)\b", text
+        r"\b(?:можно ли|стоит ли|что будет если|что если|как мне|как можно|как лучше|what if|should i|would it be better|is it worth|do you think i should|can i|could i)\b", text
     ):
         return {"reply": "Могу помочь с этим, но сначала уточню: ты спрашиваешь о возможности или хочешь, чтобы я выполнил действие? Пока ничего не менял.", "action": "ask_clarification"}
     return None
@@ -2346,6 +3202,12 @@ def guard_model_action(action: str, message: str, conversation_history: list[dic
 def _run_agent_impl(message: str, selected_date: str, conversation_history: list[dict[str, Any]] | None = None, profile_preferences: dict[str, Any] | None = None) -> dict[str, Any]:
     if len(message) > 3000:
         raise ValueError("Сообщение слишком длинное (максимум 3000 символов).")
+    explicit_iso = re.search(r"\b(20\d{2}-\d{2}-\d{2})\b", str(message or ""))
+    if explicit_iso:
+        try:
+            dt.date.fromisoformat(explicit_iso.group(1))
+        except ValueError:
+            return {"reply": f"{explicit_iso.group(1)} is not a valid calendar date. Please provide a valid date in YYYY-MM-DD format. I have not changed anything.", "action": "ask_clarification"}
     if user_requests_real_world_booking(message):
         return {"reply": "Я могу управлять твоим календарём, но пока не могу связываться с клиникой/заведением и совершать реальное бронирование. Сначала согласуй запись напрямую. После подтверждения скажи, например: «Добавь в календарь запись к стоматологу на 2026-11-03 в 10:00». Если тебе нужно не бронирование, а задача позвонить в заведение, скажи: «Добавь задачу — позвонить в клинику на 15 минут».", "action": "ask_clarification"}
     if not NVIDIA_API_KEY:
@@ -2439,7 +3301,9 @@ def _run_agent_impl(message: str, selected_date: str, conversation_history: list
         text_has_temporal_intent = bool(re.search(
             r"\b(?:перенеси|перенести|перемести|передвинь|сдвинь|поменяй\s+(?:дату|время)|"
             r"измени\s+(?:дату|время|время\s+начала|время\s+окончания)|"
-            r"продли|сократи|изменить\s+(?:дату|время)|поменяй\s+окончание)\b", message.lower()
+            r"продли|сократи|изменить\s+(?:дату|время)|поменяй\s+окончание|"
+            r"move|reschedule|postpone|shift|bring\s+forward|change\s+(?:the\s+)?(?:date|time|start|end)|"
+            r"extend|shorten|end\s+at|finish\s+at|set\s+the\s+time)\b", message.lower()
         ))
         if not text_has_temporal_intent:
             # Ignore accidental model edits to dates/times when the user's intent was unrelated.
